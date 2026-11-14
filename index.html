@@ -7,31 +7,31 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Scran">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F4F0F5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#170C1C" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Scran</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout idea: one phone-width column. Big photo cards, heavy display type, one tomato accent, pistachio for "yours". */
+/* Layout idea: one phone-width column. Big photo cards, heavy display type, black and white only, light and dark. */
 :root{
-  --bg:#F4F0F5; --card:#FFFFFF; --ink:#24122B; --mute:#74667B; --line:#E4DCE8;
-  --accent:#E93F27; --accent-ink:#FFFFFF; --pop:#C9E65C; --pop-ink:#24122B; --good:#23835A;
-  --t0:#F9C9BF; --t1:#D9EE8F; --t2:#D8C7F0; --t3:#FFD98A;
+  --bg:#F5F5F5; --card:#FFFFFF; --ink:#0A0A0A; --mute:#6B6B6B; --line:#E2E2E2;
+  --accent:#0A0A0A; --accent-ink:#FFFFFF; --pop:#0A0A0A; --pop-ink:#FFFFFF; --good:#0A0A0A; --good-ink:#FFFFFF;
+  --t0:#ECECEC; --t1:#E0E0E0; --t2:#D3D3D3; --t3:#F2F2F2; --shade:rgba(0,0,0,.55);
   --display:"Bricolage Grotesque","Arial Narrow",Impact,system-ui,sans-serif;
   --body:"Figtree",-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:18px; color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#170C1C; --card:#241530; --ink:#F6EEF8; --mute:#AD9CB6; --line:#3A2846;
-  --accent:#FF5B42; --accent-ink:#1B0D10; --pop:#C9E65C; --pop-ink:#1B0D20; --good:#5CC796;
-  --t0:#6B2A22; --t1:#4B5A1C; --t2:#45326A; --t3:#6A4E12; color-scheme:dark;}}
+  --bg:#000000; --card:#141414; --ink:#F5F5F5; --mute:#9A9A9A; --line:#2A2A2A;
+  --accent:#F5F5F5; --accent-ink:#0A0A0A; --pop:#F5F5F5; --pop-ink:#0A0A0A; --good:#F5F5F5; --good-ink:#0A0A0A;
+  --t0:#1E1E1E; --t1:#292929; --t2:#333333; --t3:#242424; --shade:rgba(0,0,0,.7); color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#170C1C; --card:#241530; --ink:#F6EEF8; --mute:#AD9CB6; --line:#3A2846;
-  --accent:#FF5B42; --accent-ink:#1B0D10; --pop:#C9E65C; --pop-ink:#1B0D20; --good:#5CC796;
-  --t0:#6B2A22; --t1:#4B5A1C; --t2:#45326A; --t3:#6A4E12; color-scheme:dark;}
+  --bg:#000000; --card:#141414; --ink:#F5F5F5; --mute:#9A9A9A; --line:#2A2A2A;
+  --accent:#F5F5F5; --accent-ink:#0A0A0A; --pop:#F5F5F5; --pop-ink:#0A0A0A; --good:#F5F5F5; --good-ink:#0A0A0A;
+  --t0:#1E1E1E; --t1:#292929; --t2:#333333; --t3:#242424; --shade:rgba(0,0,0,.7); color-scheme:dark;}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
@@ -58,7 +58,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 /* hero */
 .hero{margin:10px 16px 0;border-radius:26px;overflow:hidden;position:relative;display:block;background:var(--card);cursor:pointer}
 .hero .pic{width:100%;aspect-ratio:4/4.4;object-fit:cover;display:block}
-.hero .txt{position:absolute;left:0;right:0;bottom:0;padding:70px 18px 18px;background:linear-gradient(transparent,rgba(20,8,24,.86));color:#fff}
+.hero .txt{position:absolute;left:0;right:0;bottom:0;padding:70px 18px 18px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff}
 .hero h2{font-size:34px;margin-top:8px}
 .hero .meta{color:rgba(255,255,255,.85);margin-top:6px}
 .tagpop{display:inline-block;background:var(--pop);color:var(--pop-ink);font:700 12px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:7px}
@@ -84,10 +84,10 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .nop span{font:800 30px/.92 var(--display);letter-spacing:-.03em;text-transform:uppercase;color:var(--ink);opacity:.8;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .card h3{font-size:18px;margin:9px 2px 3px;line-height:1.08}
 .meta{font-size:13px;color:var(--mute);margin:0 2px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
-.heart{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);color:#24122B;display:grid;place-items:center}
-.heart.on{background:var(--accent);color:#fff}
+.heart{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.94);color:#0A0A0A;display:grid;place-items:center}
+.heart.on{background:var(--accent);color:var(--accent-ink)}
 .heart.on svg{fill:currentColor}
-.time{position:absolute;left:8px;bottom:8px;background:rgba(20,8,24,.78);color:#fff;font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px}
+.time{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px}
 .pill{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:6px;background:var(--line);color:var(--ink)}
 .pill.g{background:var(--pop);color:var(--pop-ink)}
 .banner{margin:16px;padding:16px;border-radius:var(--r);background:var(--pop);color:var(--pop-ink);display:flex;gap:12px;align-items:center;justify-content:space-between}
@@ -120,7 +120,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .dhero .pic{aspect-ratio:1/.9;border-radius:0 0 28px 28px}
 .dhero .nop span{font-size:54px}
 .dbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;padding:12px 14px;margin-bottom:-66px;pointer-events:none}
-.dbar button{pointer-events:auto;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.94);color:#24122B;display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.dbar button{pointer-events:auto;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.94);color:#0A0A0A;display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 .dbar .on{background:var(--accent);color:#fff}.dbar .on svg{fill:currentColor}
 .dbody{padding:18px 16px 110px}
 .dbody h1{font-size:38px}
@@ -140,7 +140,7 @@ ul.ing li.gh{font:800 15px var(--display);text-transform:uppercase;letter-spacin
 ul.ing li.done{color:var(--mute);text-decoration:line-through}
 .box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--mute);margin-top:1px;display:grid;place-items:center}
 .done>.box,.box.on{background:var(--good);border-color:var(--good)}
-.done>.box::after,.box.on::after{content:"";width:10px;height:5px;border:2.5px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translateY(-1px)}
+.done>.box::after,.box.on::after{content:"";width:10px;height:5px;border:2.5px solid var(--good-ink);border-top:0;border-right:0;transform:rotate(-45deg) translateY(-1px)}
 ol.steps{list-style:none;padding:0;counter-reset:s;display:grid;gap:14px}
 ol.steps li{counter-increment:s;display:grid;grid-template-columns:38px 1fr;gap:10px}
 ol.steps li::before{content:counter(s);font:800 26px/1 var(--display);color:var(--accent)}
@@ -166,7 +166,7 @@ textarea:focus,.field:focus,.sbox:focus-within{border-color:var(--ink)}
 .cnav{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:12px 16px 16px}
 .cnav .btn{padding:17px}
 /* sheet */
-#sheet{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(20,8,24,.5)}
+#sheet{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.5)}
 .panel{background:var(--bg);border-radius:26px 26px 0 0;max-height:90%;overflow-y:auto;padding:8px 16px 22px;animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.panel{animation:none}.prog i{transition:none}}
@@ -228,7 +228,7 @@ a{color:inherit}
 .cta{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .dbar,.ctop{padding-top:calc(12px + env(safe-area-inset-top))}
 .banner.sync{display:block}
-.banner.sync .prog{background:rgba(36,18,43,.18);margin-top:10px}
+.banner.sync .prog{background:var(--line);margin-top:10px}
 .banner.sync .prog i{background:var(--pop-ink)}
 .webcard{margin:22px 16px 0;padding:16px;border-radius:var(--r);background:var(--card);border:1px solid var(--line)}
 .webcard b{font:800 20px/1.05 var(--display);display:block;margin-bottom:4px}
@@ -543,9 +543,14 @@ function setNutrition(r){ // r.y: portions the recipe makes, r.yEst: Scran worke
 const goalOK=(r,minP,maxK)=>(!minP||(r.nu&&r.nu.p>=minP))&&(!maxK||(r.nu&&r.nu.k<=maxK));
 
 /* ---------- state ---------- */
-const DEF={prefs:{diet:'any',love:[],avoid:[],maxTime:0,servings:0,metric:true,seen:false,minP:40,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},yield:{},ts:0};
+const DEF={prefs:{diet:'any',love:[],avoid:[],maxTime:0,servings:0,metric:true,theme:'auto',seen:false,minP:40,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},yield:{},ts:0};
 function norm(s){const o=JSON.parse(JSON.stringify(DEF));if(s&&typeof s==='object')for(const k in o){if(s[k]!=null){if(k==='prefs')Object.assign(o.prefs,s.prefs);else o[k]=s[k]}}return o}
 let S=norm((()=>{try{return JSON.parse(localStorage.getItem('scran')||'{}')}catch(e){return {}}})());
+function applyTheme(){const t=S.prefs.theme||'auto',root=document.documentElement;
+  if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+  const dark=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{m.setAttribute('content',dark?'#000000':'#F5F5F5');m.removeAttribute('media')})}
+applyTheme();
 function save(){S.ts=Date.now();try{localStorage.setItem('scran',JSON.stringify(S))}catch(e){}badge()}
 
 /* ---------- recipes index ---------- */
@@ -633,8 +638,11 @@ function restoreSp(){const c=spCache();for(const id in c)index(Object.assign({},
     if(!R[id]){const p=S.ptr[id];index({id,t:p.t,g:p.g||[],d:'',i:[],s:[],m:p.m,v:p.v,p:p.url?1:0,url:p.url,src:'sp',stub:1,dv:-1,nu:p.nu||null})}}}
 const W={key:'',ids:null,loading:false};
 const CUIS=['italian','mexican','indian','french','chinese','japanese','thai','mediterranean','spanish','american','german','greek','british','vietnamese','korean'];
+function bbcLink(){const q=Q.mode==='ing'?S.pantry.join(' '):Q.q.trim();if(!q)return '';
+  return `<p class="hint pad" style="margin-top:16px"><a href="https://www.bbcgoodfood.com/search?q=${encodeURIComponent(q)}" target="_blank" rel="noopener">Search BBC Good Food for "${esc(q)}"</a>. It opens their site, and their recipes stay theirs.</p>`}
 const webKey=()=>JSON.stringify([Q.mode,Q.q.trim().toLowerCase(),Q.tag,Q.time,Q.diet,Q.minP,Q.maxK,Q.mode==='ing'?S.pantry.join():'']);
-function webHTML(){
+function webHTML(){return webHTML0()+bbcLink()}
+function webHTML0(){
   const active=Q.mode==='ing'?S.pantry.length>0:!!(Q.q.trim()||Q.tag||Q.minP||Q.maxK);if(!active)return '';
   if(!S.spKey)return `<p class="hint pad" style="margin-top:20px">Want more? Add a free Spoonacular key in <button data-a="prefs" style="text-decoration:underline">settings</button> to search 365,000 more recipes from here.</p>`;
   const k=webKey();
@@ -842,12 +850,13 @@ function sheetPrefs(){const p=S.prefs;const ch=(on,l,a)=>`<button class="chip ${
   <form class="row" data-f="addavoid" style="margin-top:4px"><input class="field" id="avoidq" placeholder="Something else to leave out" autocomplete="off" aria-label="Another ingredient to leave out"><button class="btn s">Add</button></form>
   <h4>Weeknight time limit</h4><div class="chips wrap">${[[0,'No limit'],[20,'20 min'],[30,'30 min'],[45,'45 min'],[60,'1 hour']].map(([k,l])=>ch(p.maxTime===k,l,`data-k="maxTime" data-v="${k}"`)).join('')}</div>
   <h4>Cooking for</h4><div class="chips wrap">${[[0,'As written'],[1,'1'],[2,'2'],[3,'3'],[4,'4'],[6,'6']].map(([k,l])=>ch(p.servings===k,l,`data-k="servings" data-v="${k}"`)).join('')}</div>
+  <h4>Appearance</h4><div class="chips wrap">${[['auto','Match my phone'],['light','Light'],['dark','Dark']].map(([k,l])=>ch((p.theme||'auto')===k,l,`data-k="theme" data-v="${k}"`)).join('')}</div>
   <h4>Units</h4><div class="chips wrap">${ch(p.metric,'Metric (g, ml, °C)','data-k="metric" data-v="1"')}${ch(!p.metric,'As written','data-k="metric" data-v="0"')}</div>
   <h4>Recipe library</h4><p class="sub">${Object.values(R).filter(r=>!r.src&&!r.mine).length} built in. ${SRC.mdbN?SRC.mdbN+' from TheMealDB, updated '+new Date(SRC.mdbTs).toLocaleDateString('en-GB')+'.':'TheMealDB library not downloaded yet.'}</p>
   <p style="margin-top:8px"><button class="btn s o" data-a="resync" ${SRC.syncing?'disabled':''}>${SRC.syncing?'Refreshing...':'Refresh TheMealDB library'}</button></p>
   <h4>Spoonacular key (optional)</h4><p class="sub">Adds live search across 365,000+ recipes. The free plan gives 50 points a day, roughly 25 searches. <a href="https://spoonacular.com/food-api/pricing" target="_blank" rel="noopener">Get a free key</a>. It is stored on this device only.${SRC.spLeft!=null?' '+SRC.spLeft+' points left today.':''}</p>
   <form class="row" data-f="spkey" style="margin-top:8px"><input class="field" id="spkey" value="${esc(S.spKey)}" placeholder="Paste your key" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Spoonacular key"><button class="btn s">Save</button></form>
-  <h4>Version</h4><p class="sub">Scran build 4, 14 November 2026. If yours says something else, close the app and open it twice.</p>
+  <h4>Version</h4><p class="sub">Scran build 5, 14 November 2026. If yours says something else, close the app and open it twice.</p>
   <h4>Backup</h4><p class="sub">Everything is saved on this device. Export a copy now and then.</p>
   <div class="row" style="margin-top:8px"><button class="btn s o" data-a="export">Export my data</button><label class="btn s o" tabindex="0">Import<input type="file" id="importf" accept="application/json,.json" hidden></label></div>
   <div style="height:16px"></div><button class="btn a w" data-a="prefsdone">Done</button>`)}
@@ -919,7 +928,7 @@ const ACT={
   prefsdone(){S.prefs.seen=true;save();closeSheet();if(D)drawDetail();rerender()},
   pref(el){const p=S.prefs,k=el.dataset.k,v=el.dataset.v;
     if(k==='love'||k==='avoid'){const i=p[k].indexOf(v);if(i<0)p[k].push(v);else p[k].splice(i,1)}
-    else if(k==='diet'){p.diet=v;Q.diet=v==='any'?'':v}else if(k==='metric')p.metric=v==='1';else{p[k]=+v;if(k==='minP'){Q.minP=+v;if(+v)p.lastP=+v}if(k==='maxK')Q.maxK=+v}
+    else if(k==='diet'){p.diet=v;Q.diet=v==='any'?'':v}else if(k==='metric')p.metric=v==='1';else if(k==='theme'){p.theme=v;applyTheme()}else{p[k]=+v;if(k==='minP'){Q.minP=+v;if(+v)p.lastP=+v}if(k==='maxK')Q.maxK=+v}
     p.seen=true;save();const st=$('.panel').scrollTop;sheetPrefs();$('.panel').scrollTop=st;$('.panel').style.animation='none'},
   go(el){const d=el.dataset;Object.assign(Q,{q:'',mode:d.mode||'name',minP:d.nogoal?0:S.prefs.minP,maxK:d.nogoal?0:(+d.maxk||S.prefs.maxK),time:+d.time||0,diet:d.diet||(S.prefs.diet==='any'?'':S.prefs.diet),photo:false,tag:d.tag||'',prep:!!d.prep,limit:40});tab='';go('search')},
   mode(el){Q.mode=el.dataset.m;Q.limit=40;render()},
