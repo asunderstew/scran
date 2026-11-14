@@ -302,20 +302,20 @@ dill|V||dill
 chives|V||chive
 fennel|V||fennel
 chicken|M|m|chicken
-beef|M|m|beef,steak,brisket,sirloin,ribeye,oxtail
+beef|M|m|beef,steak,brisket,sirloin,ribeye,oxtail,short rib,beef rib,braising
 minced beef|M|m|ground beef,minced beef,mince,minced meat,ground meat,hamburger,meatball,ground pork,minced pork
-pork|M|m|pork
+pork|M|m|pork,gammon,spare rib,pork rib,pork shoulder
 bacon|M|m|bacon,pancetta,guanciale,lardon
 ham|M|m|ham,prosciutto
 sausage|M|m|sausage,chorizo,salami,kielbasa,bratwurst,pepperoni,hot dog
-lamb|M|m|lamb,mutton
+lamb|M|m|lamb,mutton,goat
 turkey|M|m|turkey
 duck|M|m|duck
 veal|M|m|veal
 game|M|m|rabbit,venison,liver,meat,ribs,goose
-salmon|M|f|salmon
+salmon|M|f|salmon,trout,mackerel,sardine,herring,kipper
 tuna|M|f|tuna
-white fish|M|f|cod,fish,haddock,tilapia,trout,mackerel,sardine,herring,halibut,sea bass,trevally,snapper,perch,pike,carp,eel,catfish,pollock,sole,flounder,swordfish,ceviche,caviar,roe,surimi
+white fish|M|f|cod,fish,haddock,tilapia,halibut,monkfish,plaice,hake,bream,whiting,barramundi,mahi mahi,sea bass,trevally,snapper,perch,pike,carp,eel,catfish,pollock,sole,flounder,swordfish,ceviche,caviar,roe,surimi
 prawns|M|f|shrimp,prawn
 anchovies|M|f|anchovy,anchovie
 seafood|M|f|seafood,mussel,clam,squid,calamari,octopus,crab,lobster,scallop,oyster
@@ -339,6 +339,7 @@ ricotta|D|d|ricotta,cottage cheese,quark
 cheese|D|d|cheese,gruyere,emmental,gouda,appenzeller,provolone,halloumi,paneer
 yogurt|D|d|yogurt,yoghurt,kefir
 eggs|D|d|egg,yolk,egg white
+protein powder|D||protein powder,whey,whey protein,protein isolate
 butter|D|d|butter,ghee
 tofu|D||tofu,tempeh,seitan
 ice cream|D|d|ice cream
@@ -353,7 +354,7 @@ couscous|G||couscous,quinoa,bulgur,barley,buckwheat
 lentils|G||lentil
 chickpeas|T||chickpea,garbanzo
 beans|T||bean,kidney bean,black bean,cannellini,butter bean
-polenta|G||polenta,cornmeal,semolina
+polenta|G||polenta,cornmeal,semolina,grits
 tinned tomatoes|T||canned tomato,canned tomatoe,tinned tomato,tinned tomatoe,crushed tomato,crushed tomatoe,diced tomato,diced tomatoe,chopped tomato,chopped tomatoe,passata,tomato sauce,tomato puree,pasta sauce,spaghetti sauce,marinara
 tomato paste|T||tomato paste,tomato concentrate
 coconut milk|T||coconut milk,coconut cream
@@ -429,10 +430,11 @@ const STAPLES=new Set(['salt','black pepper','water','olive oil','cooking oil'])
 /* ---------- quantities: scaling and metric ---------- */
 const FRAC={'½':'1/2','⅓':'1/3','⅔':'2/3','¼':'1/4','¾':'3/4','⅛':'1/8','⅜':'3/8','⅝':'5/8','⅞':'7/8'};
 const NUM='(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?)';
-const UNITS='fl\\.? ?oz|fluid ounces?|kg|kilograms?|grams?|gr|g|mg|ml|millilit(?:er|re)s?|lit(?:er|re)s?|l|dl|cl|oz|ounces?|lbs?|pounds?|cups?|tbsps?|tablespoons?|tbs|tsps?|teaspoons?|quarts?|qt|pints?|gallons?|gal|inch(?:es)?|cm|mm|sticks?|cloves?|cans?|tins?|slices?|pinch(?:es)?|handfuls?|bunch(?:es)?|pieces?|packets?|packs?|jars?';
+const UNITS='fl\\.? ?oz|fluid ounces?|kgs?|kilos?|kilograms?|grammes?|grams?|gms?|gr|g|mg|mls?|millilit(?:er|re)s?|lit(?:er|re)s?|ltrs?|l|dl|cl|oz|ounces?|lbs?|pounds?|cups?|tbsps?|tablespoons?|tbs|tsps?|teaspoons?|quarts?|qt|pints?|gallons?|gal|inch(?:es)?|cm|mm|sticks?|cloves?|cans?|tins?|slices?|pinch(?:es)?|handfuls?|bunch(?:es)?|pieces?|packets?|packs?|jars?';
 const QRE=new RegExp('('+NUM+')(?:(\\s*(?:-|–|to)\\s*)('+NUM+'))?(\\s*)(?:('+UNITS+')\\b)?','gi');
-const METRIC_U=/^(kg|kilograms?|grams?|gr|g|mg|ml|millilit(er|re)s?|lit(er|re)s?|l|dl|cl|cm|mm)$/i;
-const HASMETRIC=/\d\s*(?:kg|g|grams?|ml|l|dl|cl|lit(?:er|re)s?)\b/i;
+const METRIC_U=/^(kgs?|kilos?|kilograms?|grammes?|grams?|gms?|gr|g|mg|mls?|millilit(er|re)s?|lit(er|re)s?|ltrs?|l|dl|cl|cm|mm)$/i;
+const CANON=u=>{u=u.toLowerCase().replace(/\./g,'');return /^(kgs?|kilos?|kilograms?)$/.test(u)?'kg':/^(grammes?|grams?|gms?|gr|g)$/.test(u)?'g':/^(mls?|millilit(er|re)s?)$/.test(u)?'ml':/^(lit(er|re)s?|ltrs?|l)$/.test(u)?'l':u};
+const HASMETRIC=/\d\s*(?:kgs?|kilos?|g|gms?|grams?|grammes?|mls?|ml|l|ltrs?|dl|cl|lit(?:er|re)s?)\b/i;
 function pnum(s){s=s.replace(',','.').trim();let m;if((m=s.match(/^(\d+)\s+(\d+)\/(\d+)$/)))return +m[1]+m[2]/m[3];if((m=s.match(/^(\d+)\/(\d+)$/)))return m[1]/m[2];return parseFloat(s)}
 function conv(v,u,line){u=u.toLowerCase().replace('.','');
   if(/^cups?$/.test(u))return[v*240,'ml'];if(/^(fl ?oz|fluid ounces?)$/.test(u))return[v*29.6,'ml'];
@@ -461,7 +463,11 @@ function fmtIng(text,x,metric){
     if(!c&&x===1)return m;
     if(c){const ca=conv(va,u,t);return (vb!=null?nice(ca[0],true)+'-'+fmtQ(conv(vb,u,t)[0],ca[1]):fmtQ(ca[0],ca[1]))}
     const isM=u&&METRIC_U.test(u);
-    return nice(va,isM)+(vb!=null?'-'+nice(vb,isM):'')+(u?(sp||(isM?'':' '))+u:sp)});
+    if(isM){let cu=CANON(u);if(cu==='kg'&&va<1){va*=1000;if(vb!=null)vb*=1000;cu='g'}else if(cu==='l'&&va<1){va*=1000;if(vb!=null)vb*=1000;cu='ml'}
+      else if(cu==='g'&&va>=1000&&vb==null){va/=1000;cu='kg'}else if(cu==='ml'&&va>=1000&&vb==null){va/=1000;cu='l'}
+      const big=cu==='kg'||cu==='l',f=v=>big?String(Math.round(v*20)/20):nice(v,true);
+      return f(va)+(vb!=null?'-'+f(vb):'')+' '+cu}
+    return nice(va,isM)+(vb!=null?'-'+nice(vb,isM):'')+(u?(sp||' ')+u:sp)});
 }
 function fmtStep(s,metric){
   if(!metric||/°\s*C|celsius|\d\s?C\b/i.test(s))return s;
@@ -469,54 +475,69 @@ function fmtStep(s,metric){
 function stepSecs(s){const m=s.match(/(\d+)(?:\s*(?:-|–|to)\s*\d+)?\s*(seconds?|secs?|minutes?|mins?|min|hours?|hrs?|hr)\b/i);if(!m)return 0;const n=+m[1],u=m[2][0].toLowerCase();return n*(u==='s'?1:u==='m'?60:3600)}
 
 /* ---------- nutrition estimates: per 100 g kcal, protein, carbs, fat, grams per piece, g per ml ---------- */
-const NU={};`onion:40,1.1,9,.1,150,.6;spring onion:32,1.8,7,.2,15,.4;garlic:149,6.4,33,.5,4,.6;tomato:18,.9,3.9,.2,120,.75;potato:77,2,17,.1,170,.65;sweet potato:86,1.6,20,.1,200,.6;carrot:41,.9,10,.2,70,.55;celery:16,.7,3,.2,40,.45;pepper:31,1,6,.3,150,.6;chilli:40,1.9,9,.4,15,.5;mushroom:22,3.1,3.3,.3,18,.35;spinach:23,2.9,3.6,.4,30,.13;kale:35,2.9,4.4,1.5,30,.1;cabbage:25,1.3,6,.1,900,.35;broccoli:34,2.8,7,.4,300,.35;cauliflower:25,1.9,5,.3,600,.45;courgette:17,1.2,3.1,.3,200,.55;aubergine:25,1,6,.2,300,.4;cucumber:15,.7,3.6,.1,300,.55;lettuce:15,1.4,2.9,.2,300,.2;leek:61,1.5,14,.3,150,.4;peas:81,5.4,14,.4,0,.6;sweetcorn:86,3.2,19,1.2,150,.65;green beans:31,1.8,7,.2,0,.45;asparagus:20,2.2,3.9,.1,16,.55;beetroot:43,1.6,10,.2,100,.6;pumpkin:30,1,7,.1,1000,.5;avocado:160,2,9,15,150,.65;ginger:80,1.8,18,.8,10,.6;lemon:29,1.1,9,.3,50,1;lime:30,.7,11,.2,40,1;orange:47,.9,12,.1,140,1;apple:52,.3,14,.2,180,.5;banana:89,1.1,23,.3,118,.9;berries:45,.8,10,.4,0,.6;parsley:36,3,6,.8,10,.25;coriander:23,2.1,3.7,.5,10,.2;basil:23,3.2,2.7,.6,5,.1;mint:44,3.3,8,.7,5,.1;dill:43,3.5,7,1.1,5,.1;chives:30,3.3,4.4,.7,5,.2;fennel:31,1.2,7,.2,230,.4;chicken:140,21,0,6,170,.6;beef:200,20,0,13,220,.6;minced beef:230,18.5,0,17,0,.95;pork:190,20,0,12,180,.6;bacon:330,15,1,30,25,.6;ham:120,19,1.5,4,25,.6;sausage:300,13,3,26,65,.6;lamb:230,18,0,17,180,.6;turkey:115,24,0,2,170,.6;duck:200,18,0,14,200,.6;veal:110,20,0,3,150,.6;game:120,21,0,3,0,.6;salmon:200,20,0,13,130,.6;tuna:115,25,0,1,110,.6;white fish:85,18.5,0,.8,140,.6;prawns:85,18,.5,1,12,.6;anchovies:200,28,0,10,4,.6;seafood:85,15,3,1.5,0,.6;fish sauce:35,5,3.6,0,0,1.2;chicken stock:5,.5,.4,.2,0,1;beef stock:6,.9,.3,.2,0,1;stock:5,.3,.6,.1,0,1;gelatine:335,85,0,0,2,.6;lard:900,0,0,100,0,.9;milk:60,3.3,4.8,3.3,0,1.03;buttermilk:40,3.3,4.8,.9,0,1.03;plant milk:40,1,6,1.5,0,1;cream:340,2.1,2.8,36,0,1;sour cream:195,2.4,4.6,19,0,1;cream cheese:340,6,4,34,0,1;parmesan:400,36,3,28,0,.4;mozzarella:280,22,2.2,21,125,.45;cheddar:400,25,1.3,33,0,.45;feta:265,14,4,21,0,.6;ricotta:150,11,3,10,0,1;cheese:350,24,2,28,0,.45;yogurt:62,3.5,4.7,3.3,0,1.03;eggs:143,12.6,.7,9.5,55,1;butter:717,.9,.1,81,0,.95;tofu:120,13,2,7,0,.9;ice cream:207,3.5,24,11,0,.6;bread:265,9,49,3.2,35,.2;tortillas:300,8,50,7,50,0;buns:280,9,50,4.5,60,0;pastry:400,6,35,26,320,0;pasta:360,13,72,1.5,0,.42;rice:360,7,79,.6,0,.8;oats:380,13,66,7,0,.37;couscous:360,12.8,72,.6,0,.7;lentils:350,25,60,1,0,.8;chickpeas:120,7,17,2.5,0,.7;beans:110,7,17,.5,0,.7;polenta:360,8,77,1.5,0,.65;tinned tomatoes:25,1.2,4,.2,0,1;tomato paste:82,4.3,19,.5,0,1.1;coconut milk:190,2,3,19,0,1;condensed milk:320,8,54,8.7,0,1.3;olives:130,1,4,13,4,.6;capers:23,2.4,5,.9,0,.6;pickles:12,.5,2.4,.2,35,.6;jam:250,.4,62,.1,0,1.3;peanut butter:590,25,20,50,0,1.1;pesto:450,5,5,45,0,1;salsa:30,1.5,6,.2,0,1;seeds:570,18,20,50,0,.6;olive oil:884,0,0,100,0,.92;cooking oil:884,0,0,100,0,.92;sesame oil:884,0,0,100,0,.92;coconut oil:880,0,0,100,0,.92;vinegar:20,0,.5,0,0,1;soy sauce:55,8,5,.5,0,1.15;mustard:66,4,6,4,0,1;ketchup:100,1,26,.1,0,1.15;hot sauce:20,1,3,.5,0,1;mayonnaise:680,1,1,75,0,.95;honey:304,.3,82,0,0,1.4;maple syrup:260,0,67,0,0,1.33;flour:364,10,76,1,0,.53;sugar:390,0,100,0,0,.85;cocoa:230,20,58,14,0,.45;chocolate:540,5,60,31,0,.7;cornflour:381,.3,91,.1,0,.55;nuts:610,20,18,54,0,.55;dried fruit:300,3,79,.5,0,.65;coconut:660,7,24,65,0,.35;breadcrumbs:395,13,72,5,0,.45;juice:45,.7,10,.2,0,1;wine:83,.1,2.6,0,0,1;beer:43,.5,3.6,0,0,1;spirits:231,0,0,0,0,.95`.split(';').forEach(x=>{const [k,v]=x.split(':');NU[k]=v.split(',').map(Number)});
-const UG={g:1,gr:1,gram:1,kg:1000,kilogram:1000,mg:.001,oz:28.35,ounce:28.35,lb:453.6,pound:453.6};
-const UV={ml:1,milliliter:1,millilitre:1,l:1000,liter:1000,litre:1000,dl:100,cl:10,cup:240,tbsp:15,tablespoon:15,tb:15,tsp:5,teaspoon:5,quart:946,qt:946,pint:473,gallon:3785,gal:3785};
+const NU={};`onion:40,1.1,9,.1,150,.6;spring onion:32,1.8,7,.2,15,.4;garlic:149,6.4,33,.5,4,.6;tomato:18,.9,3.9,.2,120,.75;potato:77,2,17,.1,170,.65;sweet potato:86,1.6,20,.1,200,.6;carrot:41,.9,10,.2,70,.55;celery:16,.7,3,.2,40,.45;pepper:31,1,6,.3,150,.6;chilli:40,1.9,9,.4,15,.5;mushroom:22,3.1,3.3,.3,18,.35;spinach:23,2.9,3.6,.4,30,.13;kale:49,4.3,9,.9,30,.1;cabbage:25,1.3,6,.1,900,.35;broccoli:34,2.8,7,.4,300,.35;cauliflower:25,1.9,5,.3,600,.45;courgette:17,1.2,3.1,.3,200,.55;aubergine:25,1,6,.2,300,.4;cucumber:15,.7,3.6,.1,300,.55;lettuce:15,1.4,2.9,.2,300,.2;leek:61,1.5,14,.3,150,.4;peas:81,5.4,14,.4,0,.6;sweetcorn:86,3.2,19,1.2,150,.65;green beans:31,1.8,7,.2,0,.45;asparagus:20,2.2,3.9,.1,16,.55;beetroot:43,1.6,10,.2,100,.6;pumpkin:26,1,6.5,.1,1000,.5;avocado:160,2,9,15,150,.65;ginger:80,1.8,18,.8,10,.6;lemon:29,1.1,9,.3,50,1;lime:30,.7,11,.2,40,1;orange:47,.9,12,.1,140,1;apple:52,.3,14,.2,180,.5;banana:89,1.1,23,.3,118,.9;berries:45,.8,10,.4,0,.6;parsley:36,3,6,.8,10,.25;coriander:23,2.1,3.7,.5,10,.2;basil:23,3.2,2.7,.6,5,.1;mint:44,3.3,8,.7,5,.1;dill:43,3.5,7,1.1,5,.1;chives:30,3.3,4.4,.7,5,.2;fennel:31,1.2,7,.2,230,.4;chicken:140,21,0,6,170,.6;beef:200,20,0,13,220,.6;minced beef:230,18.5,0,17,0,.95;pork:190,20,0,12,180,.6;bacon:330,15,1,30,25,.6;ham:120,19,1.5,4,25,.6;sausage:300,13,3,26,65,.6;lamb:230,18,0,17,180,.6;turkey:115,24,0,2,170,.6;duck:200,18,0,14,200,.6;veal:110,20,0,3,150,.6;game:120,21,0,3,0,.6;salmon:200,20,0,13,130,.6;tuna:115,25,0,1,110,.6;white fish:85,18.5,0,.8,140,.6;prawns:85,18,.5,1,12,.6;anchovies:200,28,0,10,4,.6;seafood:85,15,3,1.5,0,.6;fish sauce:35,5,3.6,0,0,1.2;chicken stock:5,.5,.4,.2,0,1;beef stock:6,.9,.3,.2,0,1;stock:5,.3,.6,.1,0,1;gelatine:335,85,0,0,2,.6;lard:900,0,0,100,0,.9;milk:60,3.3,4.8,3.3,0,1.03;buttermilk:40,3.3,4.8,.9,0,1.03;plant milk:40,1,6,1.5,0,1;cream:340,2.1,2.8,36,0,1;sour cream:195,2.4,4.6,19,0,1;cream cheese:340,6,4,34,0,1;parmesan:400,36,3,28,0,.4;mozzarella:280,22,2.2,21,125,.45;cheddar:400,25,1.3,33,0,.45;feta:265,14,4,21,0,.6;ricotta:150,11,3,10,0,1;cheese:350,24,2,28,0,.45;yogurt:62,3.5,4.7,3.3,0,1.03;eggs:143,12.6,.7,9.5,55,1;butter:717,.9,.1,81,0,.95;tofu:120,13,2,7,0,.9;ice cream:207,3.5,24,11,0,.6;bread:265,9,49,3.2,35,.2;tortillas:300,8,50,7,50,0;buns:280,9,50,4.5,60,0;pastry:400,6,35,26,320,0;pasta:360,13,72,1.5,0,.42;rice:360,7,79,.6,0,.8;oats:380,13,66,7,0,.37;couscous:360,12.8,72,.6,0,.7;lentils:350,25,60,1,0,.8;chickpeas:120,7,17,2.5,0,.7;beans:110,7,17,.5,0,.7;polenta:360,8,77,1.5,0,.65;tinned tomatoes:25,1.2,4,.2,0,1;tomato paste:82,4.3,19,.5,0,1.1;coconut milk:190,2,3,19,0,1;condensed milk:320,8,54,8.7,0,1.3;olives:130,1,4,13,4,.6;capers:23,2.4,5,.9,0,.6;pickles:12,.5,2.4,.2,35,.6;jam:250,.4,62,.1,0,1.3;peanut butter:590,25,20,50,0,1.1;pesto:450,5,5,45,0,1;salsa:30,1.5,6,.2,0,1;seeds:570,18,20,50,0,.6;olive oil:884,0,0,100,0,.92;cooking oil:884,0,0,100,0,.92;sesame oil:884,0,0,100,0,.92;coconut oil:880,0,0,100,0,.92;vinegar:20,0,.5,0,0,1;soy sauce:55,8,5,.5,0,1.15;mustard:66,4,6,4,0,1;ketchup:100,1,26,.1,0,1.15;hot sauce:20,1,3,.5,0,1;mayonnaise:680,1,1,75,0,.95;honey:304,.3,82,0,0,1.4;maple syrup:260,0,67,0,0,1.33;flour:364,10,76,1,0,.53;sugar:390,0,100,0,0,.85;cocoa:230,20,58,14,0,.45;chocolate:540,5,60,31,0,.7;cornflour:381,.3,91,.1,0,.55;nuts:610,20,18,54,0,.55;dried fruit:300,3,79,.5,0,.65;coconut:660,7,24,65,0,.35;breadcrumbs:395,13,72,5,0,.45;juice:45,.7,10,.2,0,1;wine:83,.1,2.6,0,0,1;beer:43,.5,3.6,0,0,1;spirits:231,0,0,0,0,.95;protein powder:380,80,8,5,0,.5;grits:360,8,77,1.5,0,.65;gammon:140,21,0,6,170,.6`.split(';').forEach(x=>{const [k,v]=x.split(':');NU[k]=v.split(',').map(Number)});
+const UG={g:1,gr:1,gm:1,gramme:1,gram:1,kg:1000,kilo:1000,kilogram:1000,mg:.001,oz:28.35,ounce:28.35,lb:453.6,pound:453.6};
+const UV={ml:1,mls:1,ltr:1000,milliliter:1,millilitre:1,l:1000,liter:1000,litre:1000,dl:100,cl:10,cup:240,tbsp:15,tablespoon:15,tb:15,tsp:5,teaspoon:5,quart:946,qt:946,pint:473,gallon:3785,gal:3785};
 const CAN={tuna:145,chickpeas:240,beans:240,'tomato paste':170,sweetcorn:260,'condensed milk':397},SLICE={bread:35,ham:25,bacon:25,cheese:20,cheddar:20,mozzarella:20};
 const PIECE=[[/thigh|drumstick/,110],[/wing/,50],[/whole chicken/,1400],[/fillet/,150],[/chop/,180],[/yolk/,18],[/egg white/,33]];
-const MQ=new RegExp('('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*(kg|grams?|gr|g|ml|dl|cl|l|lit(?:er|re)s?|millilit(?:er|re)s?)\\b','i');
+const MQ=new RegExp('('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*(kgs?|kilos?|kilograms?|grammes?|grams?|gms?|gr|g|mls?|dl|cl|l|ltrs?|lit(?:er|re)s?|millilit(?:er|re)s?)\\b','i');
 const LQ=new RegExp('^\\s*(?:~|about\\s+|approx\\.?\\s+)?('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*(?:('+UNITS+')\\b)?','i');
 const AQ=new RegExp('('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*('+UNITS+')\\b','i'),TQ=new RegExp('[:\\s]('+NUM+')()()\\s*(?:,.*|\\(.*\\))?$');
 function gramsOf(line,e){const n=NU[e.k];if(!n)return null;
   const t=line.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g,c=>' '+FRAC[c]).replace(/^\s+/,'').toLowerCase();
   const m=MQ.exec(t)||LQ.exec(t)||AQ.exec(t)||TQ.exec(t);if(!m)return null;
   let v=pnum(m[1]);if(m[2])v=(v+pnum(m[2]))/2;if(isNaN(v))return null;
-  let u=(m[3]||'').replace(/\./g,'').trim();if(/^fl|^fluid/.test(u))return v*29.6*(n[5]||1);
+  let u=(m[3]||'').replace(/\./g,'').trim().toLowerCase();if(/^fl|^fluid/.test(u))return v*29.6*(n[5]||1);
+  if(/^(kgs?|kilos?|kilograms?)$/.test(u))u='kg';else if(/^(grammes?|grams?|gms?|gr|g)$/.test(u))u='g';else if(/^(mls?|millilit(er|re)s?)$/.test(u))u='ml';else if(/^(ltrs?|lit(er|re)s?)$/.test(u))u='l';
   if(u.length>2&&u.endsWith('s')&&!UG[u]&&!UV[u])u=u.slice(0,-1);
   if(u==='tbs')u='tbsp';if(u==='lbs')u='lb';
   let g;
   if(UG[u])g=v*UG[u];else if(UV[u])g=v*UV[u]*(n[5]||1);
   else if(u==='stick')g=v*113;else if(u==='clove')g=v*(n[4]||4);else if(u==='can'||u==='tin')g=v*(CAN[e.k]||400);
   else if(u==='slice')g=v*(SLICE[e.k]||30);else if(/^pinch/.test(u))g=0;else if(u==='handful')g=v*30;else if(/^bunch/.test(u))g=v*40;
-  else if(!u||u==='piece'){let pc=n[4];for(const [re,w] of PIECE)if(re.test(t)){pc=w;break}g=pc?v*pc:null}
+  else if(!u&&/\b(leaf|leaves)\b/.test(t)){g=v*(/cabbage|lettuce|kale|spinach|chard/.test(e.k)?25:3)}
+  else if(!u||u==='piece'){if(v>24)return null;let pc=n[4];for(const [re,w] of PIECE)if(re.test(t)){pc=w;break}g=pc?v*pc:null}
   else g=null;
-  return g==null?null:Math.min(g,4000)}
+  return g==null||g>6000?null:g}
 const STARCH=new Set(['pasta','rice','couscous','polenta','lentils']);
 function gramsAdj(l,e,g){const t=l.toLowerCase();
   if(/cooked|boiled|leftover|day.old/.test(t)&&(STARCH.has(e.k)||e.k==='oats'))g*=.36;
   if(/\b(dried|dry)\b/.test(t)&&(e.k==='beans'||e.k==='chickpeas'))g*=2.8;
-  if(/deep.?fr|for frying|for greasing|to grease|for the pan|for brushing/.test(t)&&/oil|lard|butter/.test(e.k))g*=.12;
+  if(/deep.?fr|shallow.?fr|to fry|for fry|frying|for greasing|to grease|for the pan|for brushing|for cooking/.test(t)&&/oil|lard|butter/.test(e.k))g*=.1;
   if(/whole chicken|bone.?in|drumstick|thigh|wing|ribs?\b|shank|on the bone|oxtail/.test(t)&&e.a==='M'&&!/boneless/.test(t))g*=.68;
   if(/marinade|brine|for dusting|to serve|for serving|to garnish|for garnish/.test(t)&&e.a!=='M')g*=.5;
   return g}
-function analyse(r,rows){let K=0,P=0,C=0,F=0,known=0,total=0,meat=0,starch=0;const out=[];
+const LIQ=new Set(['stock','chicken stock','beef stock','wine','beer','spirits','juice','vinegar','coconut milk','milk','buttermilk','plant milk','cream','olive oil','cooking oil','sesame oil','coconut oil','soy sauce','fish sauce','hot sauce']);
+const WRE=/(\d+(?:[.,]\d+)?)\s*(kgs?|kilos?|kilograms?|grammes?|grams?|gms?|gr|g|oz|ounces?|lbs?|pounds?)\b/i;
+function analyse(r,rows){let K=0,P=0,C=0,F=0,known=0,total=0,meat=0,starch=0,mass=0,top='',topG=0;const out=[];
   for(const l of r.i){if(typeof l!=='string')continue;total++;const e=ident(l);
-    if(!e){if(rows)out.push({l,why:'ingredient not recognised'});continue}
-    const n=NU[e.k];if(!n){known++;if(rows)out.push({l,minor:1});continue}
-    if(/\boptional\b/i.test(l)){known++;if(rows)out.push({l,why:'optional'});continue}
+    if(/\boptional\b/i.test(l)||/\bgarnish\b/i.test(l)&&!e){known++;if(rows)out.push({l,why:'optional'});continue}
+    if(!e||!NU[e.k]){const w=WRE.exec(l);if(w&&!/\b(stock|broth|water)\b/i.test(l)){const u=w[2].toLowerCase();mass+=pnum(w[1])*(/^(kg|kilo)/.test(u)?1000:/^(oz|ounce)/.test(u)?28.35:/^(lb|pound)/.test(u)?453.6:1)}
+      if(!e){if(rows)out.push({l,why:'ingredient not recognised'});continue}known++;if(rows)out.push({l,minor:1});continue}
+    const n=NU[e.k];
     let g=gramsOf(l,e);if(g==null){if(n[0]<60)known+=.5;if(rows)out.push({l,why:'no amount given'});continue}
     g=gramsAdj(l,e,g);known++;const k=g*n[0]/100,p=g*n[1]/100;K+=k;P+=p;C+=g*n[2]/100;F+=g*n[3]/100;
-    if(e.a==='M'||e.k==='tofu')meat+=g;if(STARCH.has(e.k))starch+=g;
+    if(!LIQ.has(e.k))mass+=g;
+    if(e.a==='M'||e.k==='tofu'){meat+=g;if(g>topG){topG=g;top=e.k}}if(STARCH.has(e.k))starch+=g;
     if(rows)out.push({l,g:Math.round(g),k:Math.round(k),p:Math.round(p),name:e.k})}
-  return {K,P,C,F,cov:total?known/total:0,total,meat,starch,rows:out}}
-// portions when the source gives none: a normal plate is about 170 g raw meat or fish, 95 g dry pasta or rice, or 700 kcal
-function estYield(r,a){return r.main?Math.max(1,Math.min(12,Math.round(Math.max(a.meat/170,a.starch/95,a.K/700)))):Math.max(1,Math.min(24,Math.round(a.K/250)))}
+  return {K,P,C,F,cov:total?known/total:0,total,meat,starch,mass,top,rows:out}}
+// portions when nobody states them: a plate is about 150 g raw meat or fish, 90 g dry pasta or rice, 500 g of food, or 650 kcal
+function estYield(r,a){const c=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  if(!r.main)return c(Math.round(Math.max(a.K/250,a.mass/350)),1,24);
+  return c(Math.round(Math.max(a.meat/150,a.starch/90,a.K/650,a.mass/500)),1,30)}
+// one portion has to stay humanly eatable: at most 200 g raw meat, 750 g of food, 900 kcal and 60 g protein
+const floorY=(a,usable,main)=>Math.min(30,Math.max(1,Math.ceil(a.meat/200),main?Math.ceil(a.mass/750):0,main&&usable?Math.ceil(a.K/900):0,main&&usable?Math.ceil(a.P/60):0));
 function macroProblem(r,a){if(a.total<2||a.K<150)return 'there is too little to go on';if(a.cov<.6)return 'too many ingredients have no amount';
-  const k=a.K/r.y,p=a.P/r.y;if(k>1500||k<60||p>85||p*4>k*.62)return 'the totals per portion fall outside a believable range, which usually means the portion count or an amount is wrong';return ''}
-function setNutrition(r){ // r.y: portions the recipe makes, r.yEst: Scran estimated it, r.nu: macros per portion
-  if(r.src==='sp'){r.y=r.v||1;r.yEst=0;r.nu=r.nu||null;return}
+  const k=a.K/r.y,p=a.P/r.y;if(k>1400||k<60||p>75||p*4>k*.62)return 'the totals per portion fall outside a believable range, which usually means the portion count or an amount is wrong';return ''}
+function setNutrition(r){ // r.y: portions the recipe makes, r.yEst: Scran worked it out, r.yWas: the source's own number when it was overruled, r.nu: macros per portion
+  if(r.src==='sp'){r.y=r.v||1;r.yEst=0;r.yWas=0;r.nu=r.nu||null;return}
   const a=analyse(r),user=S.yield[r.id],usable=a.total>=2&&a.K>=150&&a.cov>=.6;
-  r.y=user||r.v||(usable?estYield(r,a):(r.main?4:8));r.yEst=!user&&!r.v;
+  r.yWas=0;const fl=floorY(a,usable,r.main);
+  if(user)r.y=user;
+  else if(r.v){if(r.v>=fl)r.y=r.v;else{r.y=fl;r.yWas=r.v}}
+  else r.y=Math.max(usable?estYield(r,a):(r.main?4:8),fl);
+  r.yEst=!user&&(!r.v||!!r.yWas);
+  r.pm=a.meat>=80?{g:Math.round(a.meat/r.y/5)*5,k:a.top}:null;
   if(macroProblem(r,a)){r.nu=null;return}
   r.nu={k:Math.round(a.K/r.y/10)*10,p:Math.round(a.P/r.y),c:Math.round(a.C/r.y),f:Math.round(a.F/r.y),sv:r.y,q:a.cov>=.85&&!r.yEst?2:1}}
 const goalOK=(r,minP,maxK)=>(!minP||(r.nu&&r.nu.p>=minP))&&(!maxK||(r.nu&&r.nu.k<=maxK));
@@ -660,7 +681,7 @@ function vDiscover(){
   ${rail('Lighter plates under 500 kcal',fy.filter(r=>r.main&&r.nu&&r.nu.k<=500),'data-maxk="500"')}
   ${cuisines.map(t=>rail(cap(t)+' tonight',fy.filter(r=>r.g.includes(t)),`data-tag="${t}"`)).join('')}
   ${goal?'':rail('Breakfast and brunch',fy.filter(r=>r.g.includes('breakfast')),'data-tag="breakfast"')}
-  <p class="credit pad">${Object.values(R).filter(r=>!r.stub).length} recipes on this device, ${Object.values(R).filter(r=>r.nu&&!r.stub).length} with nutrition estimates. Estimates are worked out from ingredient lists and are a guide, not lab values. Sources: Based Cooking and Public Domain Recipes (public domain), <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>${S.spKey?', and live search via <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">spoonacular</a>':''}.</p>`}
+  <p class="credit pad">${Object.values(R).filter(r=>!r.stub).length} recipes on this device, ${Object.values(R).filter(r=>r.nu&&!r.stub).length} with nutrition estimates. Estimates are worked out per portion from ingredient lists, using nutrient values per 100 g from the USDA National Nutrient Database (SR28). They are a guide, not lab values. Sources: Based Cooking and Public Domain Recipes (public domain), <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>${S.spKey?', and live search via <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">spoonacular</a>':''}.</p>`}
 function freshHTML(){
   if(!S.spKey)return `<div class="webcard"><b>365,000 more recipes</b><p class="sub">Add a free Spoonacular key and Scran can search the web for you.</p><p style="margin-top:10px"><button class="btn s o" data-a="prefs">Add a key</button></p></div>`;
   if(SRC.freshLoading)return `<div class="rail-h"><h2>Fresh from the web</h2></div><div class="spin"></div>`;
@@ -761,7 +782,7 @@ function drawDetail(){const r=R[D.id],m=S.prefs.metric,fav=!!S.favs[r.id];
   ${r.d?`<p class="desc">${esc(r.d)}</p>`:''}
   <div class="acts"><button data-a="planit">${ic('plan')}Plan it</button><button data-a="listit">${ic('list')}Add to list</button><button data-a="adapt">${ic('spark')}Adapt</button></div>
   <div class="sec"><h2>Ingredients</h2><div class="step"><button data-a="serv" data-o="-1" aria-label="Fewer">${ic('minus')}</button><span>${servText(r,D.x)}</span><button data-a="serv" data-o="1" aria-label="More">${ic('plus')}</button></div></div>
-  <p class="hint" style="margin:-2px 0 10px">The recipe makes ${r.y} portion${r.y===1?'':'s'}${S.yield[r.id]?' (set by you)':r.yEst?' (estimated, the source gives no number)':''}. Amounts below are for ${servText(r,D.x)}.${r.src==='sp'?'':' <button data-a="howmacros" style="text-decoration:underline">Change</button>'}</p>
+  <p class="hint" style="margin:-2px 0 10px">The recipe makes ${r.y} portion${r.y===1?'':'s'}${S.yield[r.id]?' (set by you)':r.yWas?` (the source says ${r.yWas}, but its amounts are too large for that, so Scran uses ${r.y})`:r.yEst?' (estimated, the source gives no number)':''}. Amounts below are for ${servText(r,D.x)}.${r.pm?` One portion has about ${r.pm.g} g raw ${esc(r.pm.k)}.`:''}${r.src==='sp'?'':' <button data-a="howmacros" style="text-decoration:underline">Change</button>'}</p>
   <ul class="ing">${r.i.map((l,i)=>typeof l==='string'?`<li data-a="tick" data-i="${i}" class="${D.ticks.has(i)?'done':''}"><span class="box"></span><span>${esc(fmtIng(l,D.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>
   <p class="hint"><button data-a="metric" style="text-decoration:underline">${m?'Showing metric where possible. Show as written':'Showing as written. Convert to metric'}</button></p>
   <div class="sec"><h2>Method</h2></div>
@@ -826,6 +847,7 @@ function sheetPrefs(){const p=S.prefs;const ch=(on,l,a)=>`<button class="chip ${
   <p style="margin-top:8px"><button class="btn s o" data-a="resync" ${SRC.syncing?'disabled':''}>${SRC.syncing?'Refreshing...':'Refresh TheMealDB library'}</button></p>
   <h4>Spoonacular key (optional)</h4><p class="sub">Adds live search across 365,000+ recipes. The free plan gives 50 points a day, roughly 25 searches. <a href="https://spoonacular.com/food-api/pricing" target="_blank" rel="noopener">Get a free key</a>. It is stored on this device only.${SRC.spLeft!=null?' '+SRC.spLeft+' points left today.':''}</p>
   <form class="row" data-f="spkey" style="margin-top:8px"><input class="field" id="spkey" value="${esc(S.spKey)}" placeholder="Paste your key" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Spoonacular key"><button class="btn s">Save</button></form>
+  <h4>Version</h4><p class="sub">Scran build 4, 14 November 2026. If yours says something else, close the app and open it twice.</p>
   <h4>Backup</h4><p class="sub">Everything is saved on this device. Export a copy now and then.</p>
   <div class="row" style="margin-top:8px"><button class="btn s o" data-a="export">Export my data</button><label class="btn s o" tabindex="0">Import<input type="file" id="importf" accept="application/json,.json" hidden></label></div>
   <div style="height:16px"></div><button class="btn a w" data-a="prefsdone">Done</button>`)}
@@ -987,7 +1009,8 @@ ck.addEventListener('touchend',e=>{if(!C)return;const dx=e.changedTouches[0].cli
 if(S.prefs.diet!=='any')Q.diet=S.prefs.diet;Q.minP=S.prefs.minP;Q.maxK=S.prefs.maxK;
 (function(){const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h))tab=h;render();if(h.startsWith('r-'))route(h)})();
 restoreSp();rerender();loadMdb();
-if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol==='https:'){let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!window.__rl){window.__rl=1;location.reload()}had=true})}
 </script>
 </body>
 </html>
