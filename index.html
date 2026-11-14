@@ -322,7 +322,7 @@ seafood|M|f|seafood,mussel,clam,squid,calamari,octopus,crab,lobster,scallop,oyst
 fish sauce|O|f|fish sauce,oyster sauce,worcestershire
 chicken stock|T|m|chicken stock,chicken broth,chicken bouillon
 beef stock|T|m|beef stock,beef broth,beef bouillon,bone broth
-stock|T||stock,broth,bouillon,vegetable stock,vegetable broth,veggie stock,stock cube
+stock|T||stock,broth,bouillon,vegetable stock,vegetable broth,veggie stock,stock cube,cream of chicken soup,cream of mushroom soup,condensed soup
 gelatine|K|m|gelatin,gelatine
 lard|O|m|lard,tallow,suet
 milk|D|d|milk
@@ -352,9 +352,9 @@ oats|G||oat,oatmeal,rolled oat
 couscous|G||couscous,quinoa,bulgur,barley,buckwheat
 lentils|G||lentil
 chickpeas|T||chickpea,garbanzo
-beans|T||bean,kidney bean,black bean,cannellini
+beans|T||bean,kidney bean,black bean,cannellini,butter bean
 polenta|G||polenta,cornmeal,semolina
-tinned tomatoes|T||canned tomato,canned tomatoe,tinned tomato,tinned tomatoe,crushed tomato,crushed tomatoe,diced tomato,diced tomatoe,chopped tomato,chopped tomatoe,passata,tomato sauce,tomato puree
+tinned tomatoes|T||canned tomato,canned tomatoe,tinned tomato,tinned tomatoe,crushed tomato,crushed tomatoe,diced tomato,diced tomatoe,chopped tomato,chopped tomatoe,passata,tomato sauce,tomato puree,pasta sauce,spaghetti sauce,marinara
 tomato paste|T||tomato paste,tomato concentrate
 coconut milk|T||coconut milk,coconut cream
 condensed milk|T|d|condensed milk,evaporated milk
@@ -386,7 +386,7 @@ garlic powder|H||garlic powder,onion powder
 seeds|H||mustard seed,fennel seed,sesame seed,sesame,caraway,poppy seed
 saffron|H||saffron
 olive oil|O||olive oil
-cooking oil|O||vegetable oil,sunflower oil,canola oil,rapeseed oil,cooking oil,neutral oil,oil
+cooking oil|O||vegetable oil,sunflower oil,canola oil,rapeseed oil,cooking oil,neutral oil,peanut oil,groundnut oil,avocado oil,corn oil,oil
 sesame oil|O||sesame oil
 coconut oil|O||coconut oil
 vinegar|O||vinegar,balsamic,white wine vinegar,red wine vinegar,apple cider vinegar,rice vinegar
@@ -399,11 +399,11 @@ honey|O|d|honey
 maple syrup|O||maple syrup,syrup,molasses
 flour|K||flour,bread flour
 sugar|K||sugar,brown sugar,powdered sugar,icing sugar,caster sugar
-baking powder|K||baking powder
+baking powder|K||baking powder,cream of tartar
 baking soda|K||baking soda,bicarbonate of soda,bicarb
 yeast|K||yeast
 cocoa|K||cocoa,cacao
-chocolate|K||chocolate,chocolate chip
+chocolate|K||chocolate,chocolate chip,milk chocolate,dark chocolate,white chocolate
 cornflour|K||cornstarch,corn starch,cornflour,corn flour,potato starch
 nuts|K||walnut,almond,pecan,hazelnut,cashew,pistachio,peanut,pine nut,nuts
 dried fruit|K||raisin,sultana,currant,dried fruit,dates,prune
@@ -414,7 +414,7 @@ water|R||water
 coffee|R||coffee,espresso
 tea|R||tea
 juice|R||orange juice,apple juice,tomato juice
-wine|R||white wine,red wine,wine
+wine|R||white wine,red wine,rice wine,wine
 beer|R||beer,stout,lager
 spirits|R||rum,vodka,whiskey,whisky,brandy,gin,tequila,bourbon`;
 const SYNMAP={},DICT={};
@@ -423,7 +423,7 @@ const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   DICT_SRC.split('\n').forEach(l=>{const [k,a,fl,s]=l.split('|');const e={k,a,f:fl};DICT[k]=e;s.split(',').forEach(x=>{SYNMAP[x]=e;all.push(x);if(fl)f[fl].push(x)})});
   const mk=arr=>new RegExp('\\b('+arr.sort((a,b)=>b.length-a.length).map(reEsc).join('|')+')(?:s|es)?\\b','i');
   window.IDRE=mk(all);window.MEAT=mk(f.m);window.FISH=mk(f.f);window.DAIRY=mk(f.d);})();
-function ident(text){const m=IDRE.exec(text.toLowerCase());return m?SYNMAP[m[1]]:null}
+function ident(text){const t=text.toLowerCase();if(/\b(stock|broth|bouillon|consomm)/.test(t))return DICT[/beef|veal|bone/.test(t)?'beef stock':/chicken/.test(t)&&!/veg/.test(t)?'chicken stock':'stock'];const m=IDRE.exec(t);return m?SYNMAP[m[1]]:null}
 const STAPLES=new Set(['salt','black pepper','water','olive oil','cooking oil']);
 
 /* ---------- quantities: scaling and metric ---------- */
@@ -453,7 +453,7 @@ function fmtIng(text,x,metric){
   const keep=metric&&HASMETRIC.test(t);
   if(x===1&&!metric)return text;
   return t.replace(QRE,(m,a,sep,b,sp,u,idx)=>{
-    const lead=t.slice(0,idx).replace(/[~≈\s(]|about|approx\.?|around/gi,'')==='';
+    const lead=t.slice(0,idx).replace(/[~≈\s(]|about|approx\.?|around/gi,'')===''||/:\s*$/.test(t.slice(0,idx));
     if(!u&&!lead)return m;
     let va=pnum(a)*x,vb=b?pnum(b)*x:null;
     if(isNaN(va))return m;
@@ -476,9 +476,10 @@ const CAN={tuna:145,chickpeas:240,beans:240,'tomato paste':170,sweetcorn:260,'co
 const PIECE=[[/thigh|drumstick/,110],[/wing/,50],[/whole chicken/,1400],[/fillet/,150],[/chop/,180],[/yolk/,18],[/egg white/,33]];
 const MQ=new RegExp('('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*(kg|grams?|gr|g|ml|dl|cl|l|lit(?:er|re)s?|millilit(?:er|re)s?)\\b','i');
 const LQ=new RegExp('^\\s*(?:~|about\\s+|approx\\.?\\s+)?('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*(?:('+UNITS+')\\b)?','i');
+const AQ=new RegExp('('+NUM+')(?:\\s*(?:-|–|to)\\s*('+NUM+'))?\\s*('+UNITS+')\\b','i'),TQ=new RegExp('[:\\s]('+NUM+')()()\\s*(?:,.*|\\(.*\\))?$');
 function gramsOf(line,e){const n=NU[e.k];if(!n)return null;
   const t=line.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g,c=>' '+FRAC[c]).replace(/^\s+/,'').toLowerCase();
-  const m=MQ.exec(t)||LQ.exec(t);if(!m)return null;
+  const m=MQ.exec(t)||LQ.exec(t)||AQ.exec(t)||TQ.exec(t);if(!m)return null;
   let v=pnum(m[1]);if(m[2])v=(v+pnum(m[2]))/2;if(isNaN(v))return null;
   let u=(m[3]||'').replace(/\./g,'').trim();if(/^fl|^fluid/.test(u))return v*29.6*(n[5]||1);
   if(u.length>2&&u.endsWith('s')&&!UG[u]&&!UV[u])u=u.slice(0,-1);
@@ -490,19 +491,38 @@ function gramsOf(line,e){const n=NU[e.k];if(!n)return null;
   else if(!u||u==='piece'){let pc=n[4];for(const [re,w] of PIECE)if(re.test(t)){pc=w;break}g=pc?v*pc:null}
   else g=null;
   return g==null?null:Math.min(g,4000)}
-function nutrition(r){let K=0,P=0,C=0,F=0,known=0,total=0;
-  for(const l of r.i){if(typeof l!=='string')continue;total++;const e=ident(l);if(!e)continue;const n=NU[e.k];
-    if(!n){known++;continue} // salt, spices, water: negligible
-    const g=gramsOf(l,e);if(g==null){if(n[0]<60)known+=.5;continue}
-    known++;K+=g*n[0]/100;P+=g*n[1]/100;C+=g*n[2]/100;F+=g*n[3]/100}
-  if(total<2||known/total<.7||K<150)return null;
-  let sv=r.v||0,est=0;
-  if(!sv||K/sv>1400||K/sv<120){sv=r.main?Math.max(1,Math.min(10,Math.round(K/550))):Math.max(1,Math.min(24,Math.round(K/250)));est=1}
-  return {k:Math.round(K/sv/10)*10,p:Math.round(P/sv),c:Math.round(C/sv),f:Math.round(F/sv),sv,est}}
+const STARCH=new Set(['pasta','rice','couscous','polenta','lentils']);
+function gramsAdj(l,e,g){const t=l.toLowerCase();
+  if(/cooked|boiled|leftover|day.old/.test(t)&&(STARCH.has(e.k)||e.k==='oats'))g*=.36;
+  if(/\b(dried|dry)\b/.test(t)&&(e.k==='beans'||e.k==='chickpeas'))g*=2.8;
+  if(/deep.?fr|for frying|for greasing|to grease|for the pan|for brushing/.test(t)&&/oil|lard|butter/.test(e.k))g*=.12;
+  if(/whole chicken|bone.?in|drumstick|thigh|wing|ribs?\b|shank|on the bone|oxtail/.test(t)&&e.a==='M'&&!/boneless/.test(t))g*=.68;
+  if(/marinade|brine|for dusting|to serve|for serving|to garnish|for garnish/.test(t)&&e.a!=='M')g*=.5;
+  return g}
+function analyse(r,rows){let K=0,P=0,C=0,F=0,known=0,total=0,meat=0,starch=0;const out=[];
+  for(const l of r.i){if(typeof l!=='string')continue;total++;const e=ident(l);
+    if(!e){if(rows)out.push({l,why:'ingredient not recognised'});continue}
+    const n=NU[e.k];if(!n){known++;if(rows)out.push({l,minor:1});continue}
+    if(/\boptional\b/i.test(l)){known++;if(rows)out.push({l,why:'optional'});continue}
+    let g=gramsOf(l,e);if(g==null){if(n[0]<60)known+=.5;if(rows)out.push({l,why:'no amount given'});continue}
+    g=gramsAdj(l,e,g);known++;const k=g*n[0]/100,p=g*n[1]/100;K+=k;P+=p;C+=g*n[2]/100;F+=g*n[3]/100;
+    if(e.a==='M'||e.k==='tofu')meat+=g;if(STARCH.has(e.k))starch+=g;
+    if(rows)out.push({l,g:Math.round(g),k:Math.round(k),p:Math.round(p),name:e.k})}
+  return {K,P,C,F,cov:total?known/total:0,total,meat,starch,rows:out}}
+// portions when the source gives none: a normal plate is about 170 g raw meat or fish, 95 g dry pasta or rice, or 700 kcal
+function estYield(r,a){return r.main?Math.max(1,Math.min(12,Math.round(Math.max(a.meat/170,a.starch/95,a.K/700)))):Math.max(1,Math.min(24,Math.round(a.K/250)))}
+function macroProblem(r,a){if(a.total<2||a.K<150)return 'there is too little to go on';if(a.cov<.6)return 'too many ingredients have no amount';
+  const k=a.K/r.y,p=a.P/r.y;if(k>1500||k<60||p>85||p*4>k*.62)return 'the totals per portion fall outside a believable range, which usually means the portion count or an amount is wrong';return ''}
+function setNutrition(r){ // r.y: portions the recipe makes, r.yEst: Scran estimated it, r.nu: macros per portion
+  if(r.src==='sp'){r.y=r.v||1;r.yEst=0;r.nu=r.nu||null;return}
+  const a=analyse(r),user=S.yield[r.id],usable=a.total>=2&&a.K>=150&&a.cov>=.6;
+  r.y=user||r.v||(usable?estYield(r,a):(r.main?4:8));r.yEst=!user&&!r.v;
+  if(macroProblem(r,a)){r.nu=null;return}
+  r.nu={k:Math.round(a.K/r.y/10)*10,p:Math.round(a.P/r.y),c:Math.round(a.C/r.y),f:Math.round(a.F/r.y),sv:r.y,q:a.cov>=.85&&!r.yEst?2:1}}
 const goalOK=(r,minP,maxK)=>(!minP||(r.nu&&r.nu.p>=minP))&&(!maxK||(r.nu&&r.nu.k<=maxK));
 
 /* ---------- state ---------- */
-const DEF={prefs:{diet:'any',love:[],avoid:[],maxTime:0,servings:0,metric:true,seen:false,minP:40,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},ts:0};
+const DEF={prefs:{diet:'any',love:[],avoid:[],maxTime:0,servings:0,metric:true,seen:false,minP:40,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},yield:{},ts:0};
 function norm(s){const o=JSON.parse(JSON.stringify(DEF));if(s&&typeof s==='object')for(const k in o){if(s[k]!=null){if(k==='prefs')Object.assign(o.prefs,s.prefs);else o[k]=s[k]}}return o}
 let S=norm((()=>{try{return JSON.parse(localStorage.getItem('scran')||'{}')}catch(e){return {}}})());
 function save(){S.ts=Date.now();try{localStorage.setItem('scran',JSON.stringify(S))}catch(e){}badge()}
@@ -522,7 +542,7 @@ function index(r){
   if(!r.m&&r.src==='mdb'){let t=0;r.s.forEach(x=>{if(typeof x==='string')t+=stepSecs(x)});if(t>=300){r.m=Math.min(360,Math.round((t/60+10)/5)*5);r.est=1}}
   r.main=!r.g.some(t=>NOTMAIN.has(t));r.batch=r.main&&(r.g.some(t=>BATCH.has(t))||BATCHRE.test(r.t));
   r.hay=(r.t+' '+r.g.join(' ')+' '+[...r.keys].join(' ')).toLowerCase();
-  r.nu=r.src==='sp'?(r.nu||null):nutrition(r);R[r.id]=r;return r}
+  setNutrition(r);R[r.id]=r;return r}
 (window.RECIPES||[]).forEach(index);
 function reindexCustom(){for(const id in R)if(R[id].mine)delete R[id];for(const id in S.custom)index(Object.assign({},S.custom[id]))}
 reindexCustom();
@@ -605,13 +625,13 @@ function webHTML(){
 function pic(r,big){if(r&&r.url)return `<img class="pic" loading="lazy" src="${esc(r.url+(r.src==='mdb'&&!big?'/medium':''))}" alt="">`;
   return r&&(r.p||r.img)?`<img class="pic" loading="lazy" src="img/${esc(r.img||r.id)}.webp" alt="">`:`<div class="pic nop" style="--c:var(--t${hash(r?r.id:'x')%4})"><span>${esc(r?r.t:'')}</span></div>`}
 const tm=r=>(r.est?'~':'')+fmtTime(r.m);
-function meta(r){const a=[];if(r.m)a.push(tm(r));if(r.nu)a.push(`<span class="pill p">${r.nu.p} g protein</span><span class="mac">${r.nu.k} kcal · C ${r.nu.c} · F ${r.nu.f}</span>`);const d=dietLabel(r);if(d)a.push(`<span class="pill g">${d}</span>`);if(r.mine)a.push('<span class="pill">My version</span>');if(!a.length&&r.g[0])a.push(cap(r.g[0]));return a.join(' ')}
+function meta(r){const a=[];if(r.m)a.push(tm(r));if(r.nu)a.push(`<span class="pill p">${r.nu.q===1?'~':''}${r.nu.p} g protein</span><span class="mac">${r.nu.k} kcal · C ${r.nu.c} · F ${r.nu.f}</span>`);else if(!r.stub)a.push('<span class="mac">Macros not available</span>');const d=dietLabel(r);if(d)a.push(`<span class="pill g">${d}</span>`);if(r.mine)a.push('<span class="pill">My version</span>');if(!a.length&&r.g[0])a.push(cap(r.g[0]));return a.join(' ')}
 function card(r,extra){return `<article class="card" tabindex="0" role="button" data-a="open" data-id="${esc(r.id)}"><div class="cpic">${pic(r)}<button class="heart ${S.favs[r.id]?'on':''}" data-a="fav" data-id="${esc(r.id)}" aria-label="Save ${esc(r.t)}">${ic('heart')}</button></div><h3>${esc(r.t)}</h3><p class="meta">${meta(r)}</p>${extra||''}</article>`}
 const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 function days(from,n){const out=[];for(let i=0;i<n;i++){const d=new Date(from);d.setDate(from.getDate()+i);out.push(d)}return out}
 const noon=()=>{const d=new Date();d.setHours(12,0,0,0);return d};
 const DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const servText=(r,x)=>r.v?Math.max(1,Math.round(r.v*x))+' servings':(Math.round(x*100)/100)+'× recipe';
+const servText=(r,x)=>{const n=Math.max(1,Math.round(r.y*x));return n+' portion'+(n===1?'':'s')};
 
 /* ---------- views ---------- */
 let tab='discover',planOff=0,savedTab='saved';
@@ -715,18 +735,33 @@ async function openRecipe(id){let r=R[id];if(!r)return;D={id,x:1,ticks:new Set()
   if(r.stub){el.innerHTML=`<div class="dbar"><button data-a="closedetail" aria-label="Back">${ic('left')}</button><span></span></div><div class="dhero">${pic(r,true)}</div><div class="dbody"><h1>${esc(r.t)}</h1><div class="spin"></div></div>`;
     try{r=await ensureFull(id)}catch(e){if(D&&D.id===id)$('.dbody',el).innerHTML=`<h1>${esc(r.t)}</h1><p class="note">${esc((e&&e.msg)||'Could not load this recipe.')}</p><p style="margin-top:14px"><button class="btn o" data-a="retry">Try again</button></p>`;return}
     if(!D||D.id!==id)return}
-  D.x=S.prefs.servings&&r.v?S.prefs.servings/r.v:1;drawDetail()}
+  D.x=S.prefs.servings?S.prefs.servings/r.y:1;drawDetail()}
 const link=(u,t)=>/^https?:\/\//.test(u||'')?` · <a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`:'';
 function creditHTML(r){return r.mine?'Your own version.'+(r.base&&R[r.base]?' Based on '+esc(R[r.base].t)+'.':''):r.src==='mdb'?`Recipe from <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>${link(r.link,'original source')}.`:r.src==='sp'?`Recipe found via <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">spoonacular</a>${link(r.link,r.by||'original source')}.`:'Public domain recipe from Based Cooking.'}
+function macroHTML(r){const u='style="text-decoration:underline"';
+  if(!r.nu)return `<p class="note" style="margin-top:14px">No reliable macros for this recipe.${r.src==='sp'?'':` <button data-a="howmacros" ${u}>See why</button>`}</p>`;
+  return `<div class="nut"><div class="${S.prefs.minP&&r.nu.p>=S.prefs.minP?'hi':''}"><b>${r.nu.p} g</b><small>Protein</small></div><div><b>${r.nu.k}</b><small>kcal</small></div><div><b>${r.nu.c} g</b><small>Carbs</small></div><div><b>${r.nu.f} g</b><small>Fat</small></div></div>
+  <p class="hint">Per person (one portion). ${r.nu.api?'From spoonacular.':(r.nu.q===2?'Estimated from the ingredients.':'Rough estimate.')+` <button data-a="howmacros" ${u}>See the working</button>`}</p>`}
+function sheetMacros(){const r=R[D.id],a=analyse(r,true),why=macroProblem(r,a),u='style="text-decoration:underline"';
+  sheet(`<h2>Macros, worked out</h2><p class="sub">Each ingredient is matched to typical values per 100 g, added up, then divided by the number of people the recipe feeds. A wrong portion count gives wrong macros, so correct it here if needed.</p>
+  <h4>This recipe makes</h4><div class="step" style="margin-top:8px"><button data-a="yield" data-o="-1" aria-label="Fewer portions">${ic('minus')}</button><span>${r.y} portion${r.y===1?'':'s'}</span><button data-a="yield" data-o="1" aria-label="More portions">${ic('plus')}</button></div>
+  <p class="hint">${S.yield[r.id]?`Set by you. <button data-a="yieldreset" ${u}>Reset</button>`:r.yEst?'Estimated by Scran, because the source gives no number.':'From the recipe.'}</p>
+  <h4>Per person</h4><p>${r.nu?`<b>${r.nu.p} g protein</b> · ${r.nu.k} kcal · carbs ${r.nu.c} g · fat ${r.nu.f} g`:'Not shown: '+esc(why)+'.'}</p>
+  <h4>Whole recipe</h4><p>${Math.round(a.P)} g protein · ${Math.round(a.K/10)*10} kcal · carbs ${Math.round(a.C)} g · fat ${Math.round(a.F)} g</p>
+  <h4>Ingredient by ingredient</h4><div class="items" style="margin:8px 0 0">${a.rows.map(x=>`<div class="item" style="cursor:default"><div><span class="t">${esc(x.l)}</span><small>${x.why?'Not counted: '+x.why:x.minor?'Negligible':`Counted as ${x.g} g ${esc(x.name)}: ${x.p} g protein, ${x.k} kcal`}</small></div></div>`).join('')}</div>
+  <div style="height:16px"></div><button class="btn w" data-a="closesheet">Done</button>`)}
+function reYield(n){const r=R[D.id],want=Math.max(1,Math.round(r.y*D.x));if(n)S.yield[r.id]=n;else delete S.yield[r.id];setNutrition(r);D.x=want/r.y;save();
+  const st=$('#detail').scrollTop;drawDetail();$('#detail').scrollTop=st;const ps=$('.panel').scrollTop;sheetMacros();$('.panel').scrollTop=ps;$('.panel').style.animation='none';render.keep=true;render()}
 function drawDetail(){const r=R[D.id],m=S.prefs.metric,fav=!!S.favs[r.id];
   $('#detail').innerHTML=`<div class="dbar"><button data-a="closedetail" aria-label="Back">${ic('left')}</button><button data-a="fav" data-id="${esc(r.id)}" class="${fav?'on':''}" aria-label="Save">${ic('heart')}</button></div>
   <div class="dhero">${pic(r,true)}</div>
   <div class="dbody"><h1>${esc(r.t)}</h1>
+  ${macroHTML(r)}
   <div class="facts">${r.m?`<span class="chip">${ic('clock')}${tm(r)}</span>`:''}${dietLabel(r)?`<span class="chip">${dietLabel(r)}</span>`:''}${r.batch?'<span class="chip">Good for meal prep</span>':''}${r.g.filter(t=>!['cheesefare','fasting','basic'].includes(t)).slice(0,3).map(t=>`<span class="chip">${esc(cap(t))}</span>`).join('')}</div>
   ${r.d?`<p class="desc">${esc(r.d)}</p>`:''}
-  ${r.nu?`<div class="nut"><div class="${S.prefs.minP&&r.nu.p>=S.prefs.minP?'hi':''}"><b>${r.nu.p} g</b><small>Protein</small></div><div><b>${r.nu.k}</b><small>kcal</small></div><div><b>${r.nu.c} g</b><small>Carbs</small></div><div><b>${r.nu.f} g</b><small>Fat</small></div></div><p class="hint">${r.nu.api?'Per serving, from spoonacular.':r.nu.est?`Estimate per portion. The recipe gives no serving count, so this assumes it makes ${r.nu.sv} portion${r.nu.sv===1?'':'s'}.`:`Estimate per serving (makes ${r.nu.sv}), worked out from the ingredients.`}</p>`:''}
   <div class="acts"><button data-a="planit">${ic('plan')}Plan it</button><button data-a="listit">${ic('list')}Add to list</button><button data-a="adapt">${ic('spark')}Adapt</button></div>
   <div class="sec"><h2>Ingredients</h2><div class="step"><button data-a="serv" data-o="-1" aria-label="Fewer">${ic('minus')}</button><span>${servText(r,D.x)}</span><button data-a="serv" data-o="1" aria-label="More">${ic('plus')}</button></div></div>
+  <p class="hint" style="margin:-2px 0 10px">The recipe makes ${r.y} portion${r.y===1?'':'s'}${S.yield[r.id]?' (set by you)':r.yEst?' (estimated, the source gives no number)':''}. Amounts below are for ${servText(r,D.x)}.${r.src==='sp'?'':' <button data-a="howmacros" style="text-decoration:underline">Change</button>'}</p>
   <ul class="ing">${r.i.map((l,i)=>typeof l==='string'?`<li data-a="tick" data-i="${i}" class="${D.ticks.has(i)?'done':''}"><span class="box"></span><span>${esc(fmtIng(l,D.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>
   <p class="hint"><button data-a="metric" style="text-decoration:underline">${m?'Showing metric where possible. Show as written':'Showing as written. Convert to metric'}</button></p>
   <div class="sec"><h2>Method</h2></div>
@@ -820,7 +855,7 @@ function readAdapt(){A.t=($('#ed-t')||{}).value||'';A.i=($('#ed-i')||{}).value||
 function saveAdapt(){readAdapt();const i=fromText(A.i),s=fromText(A.s),base=A.id?R[A.id]:null;
   if(!A.t.trim()||i.filter(x=>typeof x==='string').length<2||!s.filter(x=>typeof x==='string').length){A.err='Give it a name, at least two ingredients and one step.';sheetAdapt();$('.panel').style.animation='none';return}
   const id='my-'+Date.now().toString(36),rec={id,t:A.t.trim().slice(0,90),d:'',g:base?base.g.slice(0,6):[],i,s,mine:1};
-  if(base){rec.base=base.mine?base.base:base.id;if(base.m)rec.m=base.m;if(base.v)rec.v=Math.max(1,Math.round(base.v*(D?D.x:1)));if(base.url){rec.url=base.url;rec.p=1}else if(base.p||base.img)rec.img=base.img||base.id}
+  if(base){rec.base=base.mine?base.base:base.id;if(base.m)rec.m=base.m;rec.v=Math.max(1,Math.round(base.y*(D?D.x:1)));if(base.url){rec.url=base.url;rec.p=1}else if(base.p||base.img)rec.img=base.img||base.id}
   S.custom[id]=rec;index(Object.assign({},rec));save();closeSheet();A=null;toast('Saved to My versions');go('r-'+id);rerender()}
 
 /* ---------- shopping list ---------- */
@@ -836,7 +871,7 @@ function planAdd(id,day,x,b){pointer(R[id]);(S.plan[day]=S.plan[day]||[]).push({
   const d=new Date(day+'T12:00');for(let i=1;i<=(b||0);i++){const n=new Date(d);n.setDate(d.getDate()+i);(S.plan[dk(n)]=S.plan[dk(n)]||[]).push({id,x,l:1})}save()}
 function fillWeek(){const ds=days(weekStart(),7),tk=dk(noon());const used=new Set();ds.forEach(d=>(S.plan[dk(d)]||[]).forEach(e=>used.add(e.id)));
   const pool=forYou(r=>r.main&&!used.has(r.id)&&(r.p||r.mine));let n=0;
-  ds.forEach(d=>{const k=dk(d);if(k<tk||(S.plan[k]||[]).length)return;const r=pool.shift();if(!r)return;planAdd(r.id,k,S.prefs.servings&&r.v?S.prefs.servings/r.v:1,0);n++});
+  ds.forEach(d=>{const k=dk(d);if(k<tk||(S.plan[k]||[]).length)return;const r=pool.shift();if(!r)return;planAdd(r.id,k,S.prefs.servings?S.prefs.servings/r.y:1,0);n++});
   toast(n?`Planned ${n} dinner${n===1?'':'s'}`:'Your week is already full');rerender()}
 
 /* ---------- routing ---------- */
@@ -855,6 +890,9 @@ const ACT={
   fav(el){const id=el.dataset.id;if(S.favs[id])delete S.favs[id];else{S.favs[id]=Date.now();pointer(R[id]);toast('Saved')}save();
     document.querySelectorAll('[data-a="fav"]').forEach(b=>{if(b.dataset.id===id)b.classList.toggle('on',!!S.favs[id])})},
   prefs(){sheetPrefs()},
+  howmacros(){sheetMacros()},
+  yield(el){const r=R[D.id];reYield(Math.max(1,Math.min(40,r.y+ +el.dataset.o)))},
+  yieldreset(){reYield(0)},
   focus(){const p=S.prefs;p.minP=p.minP?0:(p.lastP||40);Q.minP=p.minP;save();render()},
   prefsdone(){S.prefs.seen=true;save();closeSheet();if(D)drawDetail();rerender()},
   pref(el){const p=S.prefs,k=el.dataset.k,v=el.dataset.v;
@@ -885,7 +923,7 @@ const ACT={
   // detail
   tick(el){const i=+el.dataset.i;if(D.ticks.has(i))D.ticks.delete(i);else D.ticks.add(i);el.classList.toggle('done')},
   tickc(el){el.classList.toggle('done')},
-  serv(el){const r=R[D.id],o=+el.dataset.o;if(r.v){const s=Math.max(1,Math.round(r.v*D.x)+o);D.x=s/r.v}else D.x=Math.max(.5,D.x+o*.5);const st=$('#detail').scrollTop;drawDetail();$('#detail').scrollTop=st},
+  serv(el){const r=R[D.id],o=+el.dataset.o;D.x=Math.max(1,Math.round(r.y*D.x)+o)/r.y;const st=$('#detail').scrollTop;drawDetail();$('#detail').scrollTop=st},
   metric(){S.prefs.metric=!S.prefs.metric;save();const st=$('#detail').scrollTop;drawDetail();$('#detail').scrollTop=st},
   listit(){const r=R[D.id];const n=addToList(r,D.x);save();toast(`${n} ingredients added to your list`)},
   planit(){P={id:D.id,d:dk(noon()),x:D.x,b:0};sheetPlan()},
@@ -902,11 +940,11 @@ const ACT={
   cooked(){const id=C.id;S.cooked[id]=(S.cooked[id]||0)+1;pointer(R[id]);save();stopCook();toast('Nice one. Added to Cooked');rerender()},
   // plan sheet
   pday(el){P.d=el.dataset.d;sheetPlan();$('.panel').style.animation='none'},
-  pserv(el){const r=R[P.id],o=+el.dataset.o;if(r.v){P.x=Math.max(1,Math.round(r.v*P.x)+o)/r.v}else P.x=Math.max(.5,P.x+o*.5);sheetPlan();$('.panel').style.animation='none'},
+  pserv(el){const r=R[P.id],o=+el.dataset.o;P.x=Math.max(1,Math.round(r.y*P.x)+o)/r.y;sheetPlan();$('.panel').style.animation='none'},
   pleft(el){P.b=Math.max(0,Math.min(4,P.b+ +el.dataset.o));sheetPlan();$('.panel').style.animation='none'},
   pconfirm(){planAdd(P.id,P.d,P.x,P.b);closeSheet();toast('Added to your plan');rerender()},
   pickfor(el){sheetPick(el.dataset.d)},
-  pickadd(el){const r=R[el.dataset.id];planAdd(r.id,el.dataset.d,S.prefs.servings&&r.v?S.prefs.servings/r.v:1,0);closeSheet();rerender()},
+  pickadd(el){const r=R[el.dataset.id];planAdd(r.id,el.dataset.d,S.prefs.servings?S.prefs.servings/r.y:1,0);closeSheet();rerender()},
   unplan(el){const k=el.dataset.d;S.plan[k].splice(+el.dataset.i,1);if(!S.plan[k].length)delete S.plan[k];save();rerender()},
   week(el){planOff+=+el.dataset.o;render()},
   fill(){fillWeek()},
