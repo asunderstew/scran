@@ -677,7 +677,9 @@ function webHTML0(){return ''}
 
 /* ---------- shared bits ---------- */
 function pic(r,big){if(r&&r.url)return `<img class="pic" loading="lazy" src="${esc(r.url+(r.src==='mdb'&&!big?'/medium':''))}" alt="">`;
-  return r&&(r.p||r.img)?`<img class="pic" loading="lazy" src="img/${esc(r.img||r.id)}.webp" alt="">`:`<div class="pic nop" style="--c:var(--t${hash(r?r.id:'x')%4})"><span>${esc(r?r.t:'')}</span></div>`}
+  if(r&&(r.p||r.img))return `<img class="pic" loading="lazy" src="img/${esc(r.img||r.id)}.webp" alt="">`;
+  const ph=r&&!r.mine&&!r.stub&&PH.store[r.id];if(ph&&ph.u)return `<img class="pic" loading="lazy" src="${esc(ph.u)}" alt="">`;
+  return `<div class="pic nop"${r&&!r.mine&&!r.stub?` data-pid="${esc(r.id)}"`:''} style="--c:var(--t${hash(r?r.id:'x')%4})"><span>${esc(r?r.t:'')}</span></div>`}
 const tm=r=>(r.est?'~':'')+fmtTime(r.m);
 function meta(r){const a=[];if(r.m)a.push(tm(r));if(r.nu)a.push(`<span class="pill p">${r.nu.q===1?'~':''}${r.nu.p} g protein</span><span class="mac">${r.nu.k} kcal · C ${r.nu.c} · F ${r.nu.f}</span>`);else if(!r.stub)a.push('<span class="mac">Macros not available</span>');if(r.mine)a.push('<span class="pill">My version</span>');if(!a.length&&r.g[0])a.push(cap(r.g[0]));return a.join(' ')}
 function card(r,extra){return `<article class="card" tabindex="0" role="button" data-a="open" data-id="${esc(r.id)}"><div class="cpic">${pic(r)}<button class="heart ${S.favs[r.id]?'on':''}" data-a="fav" data-id="${esc(r.id)}" aria-label="Save ${esc(r.t)}">${ic('heart')}</button></div><h3>${esc(r.t)}</h3><p class="meta">${meta(r)}</p>${badges(r)}${extra||''}</article>`}
@@ -793,6 +795,7 @@ async function openRecipe(id){let r=R[id];if(!r)return;D={id,x:1,ticks:new Set()
   D.x=S.prefs.servings?S.prefs.servings/r.y:1;drawDetail()}
 const link=(u,t)=>/^https?:\/\//.test(u||'')?` · <a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`:'';
 function creditHTML(r){return r.mine?'Your own version.'+(r.base&&R[r.base]?' Based on '+esc(R[r.base].t)+'.':''):r.src==='mdb'?`Recipe from <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>${link(r.link,'original source')}.`:'Public domain recipe from Based Cooking.'}
+function phCredit(r){const h=r&&!r.url&&!r.p&&!r.img&&!r.mine&&PH.store[r.id];if(!h||!h.u)return '';const who=h.s==='mdb'?`Photo from <a href="${esc(h.l)}" target="_blank" rel="noopener">TheMealDB</a>`:`Photo by ${esc(h.a)}, ${esc(h.c)}, via <a href="${esc(h.l)}" target="_blank" rel="noopener">Wikimedia Commons</a>`;return `<span class="phcr"> ${who}. It was matched automatically, so it may not be this exact dish. <a href="#" data-a="phbad" data-id="${esc(r.id)}">Remove this photo</a></span>`}
 function macroHTML(r){const u='style="text-decoration:underline"';
   if(!r.nu)return `<p class="note" style="margin-top:14px">No reliable macros for this recipe.${r.src==='sp'?'':` <button data-a="howmacros" ${u}>See why</button>`}</p>`;
   return `<div class="nut"><div class="${S.prefs.minP&&r.nu.p>=S.prefs.minP?'hi':''}"><b>${r.nu.p} g</b><small>Protein</small></div><div><b>${r.nu.k}</b><small>kcal</small></div><div><b>${r.nu.c} g</b><small>Carbs</small></div><div><b>${r.nu.f} g</b><small>Fat</small></div></div>
@@ -826,7 +829,7 @@ function drawDetail(){const r=R[D.id],m=S.prefs.metric,fav=!!S.favs[r.id];
   <div class="sec"><h2>Your notes</h2></div>
   <textarea id="note" rows="3" placeholder="What would you change next time?" aria-label="Your notes">${esc(S.notes[r.id]||'')}</textarea>
   ${r.mine?`<p style="margin-top:14px"><button class="btn s o" data-a="delmine">${ic('trash')}Delete my version</button></p>`:''}
-  <p class="credit">${creditHTML(r)} ${tagsOf(r).length?'Dietary tags are worked out from the ingredient list. If you have an allergy or coeliac disease, check the packaging.':''}</p></div>
+  <p class="credit">${creditHTML(r)}${phCredit(r)} ${tagsOf(r).length?'Dietary tags are worked out from the ingredient list. If you have an allergy or coeliac disease, check the packaging.':''}</p></div>
   <div class="cta"><button class="btn a w" data-a="cook">${ic('play')}Start cooking</button></div>`}
 
 /* ---------- cooking mode ---------- */
@@ -883,7 +886,7 @@ function sheetPrefs(){const p=S.prefs;const ch=(on,l,a)=>`<button class="chip ${
   <h4>Units</h4><div class="chips wrap">${ch(p.metric,'Metric (g, ml, °C)','data-k="metric" data-v="1"')}${ch(!p.metric,'As written','data-k="metric" data-v="0"')}</div>
   <h4>Recipe library</h4><p class="sub">${Object.values(R).filter(r=>!r.src&&!r.mine).length} built in. ${SRC.mdbN?SRC.mdbN+' from TheMealDB, updated '+new Date(SRC.mdbTs).toLocaleDateString('en-GB')+'.':'TheMealDB library not downloaded yet.'}</p>
   <p style="margin-top:8px"><button class="btn s o" data-a="resync" ${SRC.syncing?'disabled':''}>${SRC.syncing?'Refreshing...':'Refresh TheMealDB library'}</button></p>
-  <h4>Version</h4><p class="sub">Helth build 7, 14 November 2026. If yours says something else, close the app and open it twice.</p>
+  <h4>Version</h4><p class="sub">Helth build 8, 14 November 2026. If yours says something else, close the app and open it twice.</p>
   <h4>Backup</h4><p class="sub">Everything is saved on this device. Export a copy now and then.</p>
   <div class="row" style="margin-top:8px"><button class="btn s o" data-a="export">Export my data</button><label class="btn s o" tabindex="0">Import<input type="file" id="importf" accept="application/json,.json" hidden></label></div>
   <div style="height:16px"></div><button class="btn a w" data-a="prefsdone">Done</button>`)}
@@ -942,6 +945,7 @@ window.addEventListener('hashchange',()=>route(location.hash));
 
 /* ---------- actions ---------- */
 const ACT={
+  phbad:el=>{const id=el.dataset.id;PH.store[id]={m:Date.now()+365*864e5};phSave();const c=el.closest('.phcr');if(c)c.remove();const im=document.querySelector('.dhero img.pic');if(im&&R[id])im.outerHTML=pic(R[id],true)},
   tab(el){Q.limit=40;go(el.dataset.t);if(tab===el.dataset.t)$('#view').scrollTop=0},
   open(el){go('r-'+el.dataset.id)},
   closedetail(){go(tab);rerender()},
@@ -1041,10 +1045,59 @@ let sx=0,sy=0;const ck=$('#cook');
 ck.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
 ck.addEventListener('touchend',e=>{if(!C)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*2){const n=C.i+(dx<0?1:-1);if(n>=0&&n<=C.steps.length){C.i=n;drawCook()}}},{passive:true});
 
+/* ---------- photo matching (Wikimedia, TheMealDB) ---------- */
+/*PH-START*/
+const PH={store:{},q:[],queued:new Set(),busy:0,pause:0,io:null,dirty:0};
+const PH_STOP=new Set('easy best quick simple homemade classic perfect ultimate the a an of with and in on recipe style my our traditional authentic basic healthy and for'.split(' '));
+const PH_GEN=new Set('chicken beef pork lamb fish egg eggs rice cheese bread salad soup cake pasta sauce meat potato vegetable fruit'.split(' '));
+const PH_FOOD=/dish|food|soup|stew|bread|cake|pastr|pasta|sauce|dessert|cuisine|salad|sandwich|\bpie\b|curry|snack|beverage|drink|cookie|biscuit|dumpling|pancake|rice|noodle|meat|sausage|cheese|egg|fish|seafood|vegetable|fruit|confection|sweet|condiment|dip\b|spread|porridge|casserole|pudding|tart|omelet|roll\b|cocktail|meal|breakfast|dough|bake|pizza|burger|taco|wrap|stir|roast|steak|chop|fritter|loaf|muffin|scone|jam|chutney|pickle|ice cream|custard|mousse|risotto|paella|pilaf|bowl|kebab|skewer/i;
+const PH_BAD=/logo|\bmap\b|flag|diagram|menu|restaurant|sign\b|market|stall|cover|book|poster|chart|icon|symbol|coat of arms|stamp|packag|label|shop|store|supermarket/i;
+const phStem=w=>w.length>3&&/ies$/.test(w)?w.slice(0,-3)+'y':/oes$/.test(w)?w.slice(0,-2):w.length>3&&/s$/.test(w)&&!/ss$/.test(w)?w.slice(0,-1):w;
+const phToks=s=>String(s||'').toLowerCase().replace(/\(.*?\)/g,' ').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w&&!PH_STOP.has(w)).map(phStem);
+const phQ=t=>phToks(t).join(' ');
+async function phGet(u){const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)return null;return await r.json()}catch(e){return null}finally{clearTimeout(t)}}
+const phLic=m=>{const L=((m&&m.LicenseShortName&&m.LicenseShortName.value)||'').trim();return L&&/^(CC0|CC[ -]BY|Public domain|PD\b)/i.test(L)&&!/\bNC\b|-NC|\bND\b|-ND|non-?commercial|no ?deriv|fair use|unfree/i.test(L)?L:''};
+const phArtist=m=>(((m&&m.Artist&&m.Artist.value)||'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim().slice(0,60))||'unknown author';
+const phFile=n=>'https://commons.wikimedia.org/wiki/'+encodeURI(String(n).replace(/ /g,'_'));
+const WP='https://en.wikipedia.org/w/api.php?format=json&origin=*&',WC='https://commons.wikimedia.org/w/api.php?format=json&origin=*&';
+const phMeta='&iiextmetadatafilter='+encodeURIComponent('LicenseShortName|Artist|AttributionRequired|ImageDescription');
+async function phMdb(t){const d=await phGet('https://www.themealdb.com/api/json/v1/1/search.php?s='+encodeURIComponent(t));if(d===null)return undefined;
+  const rt=phQ(t),m=(d.meals||[]).find(x=>phQ(x.strMeal)===rt&&x.strMealThumb);return m?{u:m.strMealThumb+'/medium',a:'TheMealDB',s:'mdb',l:'https://www.themealdb.com/meal/'+m.idMeal}:0}
+async function phWiki(t){const rt=phToks(t);if(!rt.length)return 0;
+  const d=await phGet(WP+'action=query&generator=search&gsrnamespace=0&gsrlimit=6&gsrsearch='+encodeURIComponent(phQ(t))+'&prop=pageimages|description&piprop=thumbnail|name&pithumbsize=640');if(d===null)return undefined;
+  const ps=Object.values((d.query&&d.query.pages)||{}).filter(p=>p.thumbnail&&p.pageimage).sort((a,b)=>a.index-b.index);let best=null,bc=0;
+  for(const p of ps){const pt=phToks(p.title);if(!pt.length||!pt.every(w=>rt.includes(w)))continue;const cov=pt.length/rt.length;if(cov<.5)continue;if(rt.length>1&&pt.length===1&&PH_GEN.has(pt[0]))continue;if(cov<1&&rt.slice(-pt.length).join(' ')!==pt.join(' '))continue;
+    if(p.description?!PH_FOOD.test(p.description):pt.length<2)continue;if(/\.svg$/i.test(p.pageimage)||PH_BAD.test(p.pageimage))continue;if(cov>bc){best=p;bc=cov}}
+  if(!best)return 0;
+  const c=await phGet(WC+'action=query&prop=imageinfo&iiprop=extmetadata&titles='+encodeURIComponent('File:'+best.pageimage)+phMeta);if(c===null)return undefined;
+  const pg=Object.values((c.query&&c.query.pages)||{})[0],m=pg&&pg.imageinfo&&pg.imageinfo[0]&&pg.imageinfo[0].extmetadata,L=phLic(m);
+  return L?{u:best.thumbnail.source,a:phArtist(m),c:L,s:'wiki',l:phFile(best.pageimage)}:0}
+async function phCommons(t){const rt=phToks(t);if(rt.length<2&&!rt.some(w=>w.length>4))return 0;
+  const d=await phGet(WC+'action=query&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch='+encodeURIComponent(phQ(t)+' filetype:bitmap')+'&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=640'+phMeta);if(d===null)return undefined;
+  const ps=Object.values((d.query&&d.query.pages)||{}).sort((a,b)=>a.index-b.index);
+  for(const p of ps){const i=p.imageinfo&&p.imageinfo[0];if(!i||!i.thumburl||i.mime!=='image/jpeg'||i.width<600||i.height<400)continue;
+    const n=p.title.replace(/^File:/,'');if(PH_BAD.test(n))continue;const ft=phToks(n.replace(/\.[a-z]+$/i,'')+' '+(((i.extmetadata||{}).ImageDescription||{}).value||'').replace(/<[^>]*>/g,' ')),cov=rt.filter(w=>ft.includes(w)).length/rt.length;
+    if(cov<.8)continue;const L=phLic(i.extmetadata);if(!L)continue;return{u:i.thumburl,a:phArtist(i.extmetadata),c:L,s:'commons',l:phFile(n)}}
+  return 0}
+async function phFind(t){let fail=0;for(const f of [phMdb,phWiki,phCommons]){const r=await f(t);if(r)return r;if(r===undefined)fail=1}return fail?undefined:0}
+const phHas=r=>!r||r.url||r.p||r.img||r.mine||r.stub;
+function phSave(){if(PH.dirty)return;PH.dirty=1;setTimeout(()=>{PH.dirty=0;idbSet('photos',PH.store)},1200)}
+function phSwap(id,ph){document.querySelectorAll('.nop[data-pid="'+CSS.escape(id)+'"]').forEach(el=>{const im=new Image();im.className=el.className.replace('nop','').trim();im.alt='';im.src=ph.u;im.onload=()=>el.replaceWith(im);im.onerror=()=>{PH.store[id]={m:Date.now()};phSave()}})}
+async function phRun(){if(PH.busy>=2||Date.now()<PH.pause)return;const id=PH.q.shift();if(!id)return;PH.busy++;
+  try{const r=R[id];if(phHas(r)){return}const have=PH.store[id];if(have&&(have.u||Date.now()-have.m<14*864e5))return;
+    const f=await phFind(r.t);if(f===undefined){PH.pause=Date.now()+60000;PH.queued.delete(id);return}
+    PH.store[id]=f||{m:Date.now()};phSave();if(f)phSwap(id,f)}
+  finally{PH.busy--;setTimeout(phRun,250)}}
+function phWant(id){if(PH.queued.has(id))return;PH.queued.add(id);PH.q.push(id);phRun();phRun()}
+function phScan(){if(!PH.io)return;document.querySelectorAll('.nop[data-pid]:not([data-po])').forEach(el=>{el.dataset.po=1;PH.io.observe(el)})}
+async function phInit(){if(!('IntersectionObserver' in window)||!window.fetch)return;const s=await idbGet('photos');if(s&&typeof s==='object')PH.store=s;
+  PH.io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){PH.io.unobserve(e.target);const id=e.target.dataset.pid,h=PH.store[id];if(h&&h.u){phSwap(id,h)}else phWant(id)}}),{rootMargin:'400px'});
+  let t;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(phScan,120)}).observe(document.body,{childList:true,subtree:true});phScan()}
+/*PH-END*/
 /* ---------- boot ---------- */
 if(S.prefs.diet!=='any')Q.diet=S.prefs.diet;Q.minP=S.prefs.minP;Q.maxK=S.prefs.maxK;
 (function(){const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h))tab=h;render();if(h.startsWith('r-'))route(h)})();
-restoreSp();rerender();loadMdb();
+restoreSp();rerender();loadMdb();phInit();
 if('serviceWorker' in navigator&&location.protocol==='https:'){let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js').catch(()=>{});
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!window.__rl){window.__rl=1;location.reload()}had=true})}
 </script>
