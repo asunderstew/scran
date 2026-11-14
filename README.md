@@ -1,4 +1,4 @@
-# Scran
+# Helth
 
 A recipe app for your phone: discover, search by ingredient, plan the week, build a shopping list, cook step by step.
 It is a static site (no server, no build step), so any static host works.
@@ -19,7 +19,6 @@ everything already downloaded.
 
 - 441 public-domain recipes are built in (Based Cooking and Public Domain Recipes).
 - On first launch the app downloads the TheMealDB library (free test key, for personal use) and keeps it on the device.
-- Optional: paste a free Spoonacular key in the taste settings to search 365,000+ recipes live. The free plan allows
   50 points a day and results are kept for at most one hour, as their terms require.
 
 ## Your data
