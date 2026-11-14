@@ -457,7 +457,7 @@ function nice(v,metric){
 function fmtQ(v,u){ // metric value with unit, promoting to kg / l
   if(u==='g'&&v>=1000)return (Math.round(v/50)/20)+' kg';if(u==='ml'&&v>=1000)return (Math.round(v/50)/20)+' l';
   if(u==='cm')return (Math.round(v*2)/2)+' cm';return nice(v,true)+' '+u}
-function fmtIng(text,x,metric){
+function fmtIng0(text,x,metric){
   let t=text.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g,c=>' '+FRAC[c]).replace(/(\d)\s+(?=\d+\/\d)/g,'$1 ').replace(/^\s+/,'');
   const keep=metric&&HASMETRIC.test(t);
   if(x===1&&!metric)return text;
@@ -476,6 +476,26 @@ function fmtIng(text,x,metric){
       return f(va)+(vb!=null?'-'+f(vb):'')+' '+cu}
     return nice(va,isM)+(vb!=null?'-'+nice(vb,isM):'')+(u?(sp||' ')+u:sp)});
 }
+const PNO=/\b(oil|butter|stock|broth|sauce|paste|seasoning|spice|rub|powder|cube|gravy|marinade|dressing|mayo|mayonnaise|soup|flavou?r)\b/i;
+const isProt=(l,e)=>{e=e||ident(l);return !!e&&(e.a==='M'||e.k==='tofu'||e.k==='eggs')&&!PNO.test(l.replace(/\(.*?\)/g,''))};
+/* meat, fish and tofu counted in pieces ("2 chicken breasts") are shown in grams */
+function fmtIng(text,x,metric){
+  try{const e=ident(text);
+    if(e&&(e.a==='M'||e.k==='tofu')&&NU[e.k]&&isProt(text,e)){
+      const t=text.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g,c=>' '+FRAC[c]).replace(/^\s+/,''),m=LQ.exec(t.toLowerCase());
+      if(m&&(!m[3]||m[3].toLowerCase()==='piece')&&!MQ.test(t)){let g=gramsOf(text,e);if(e.k==='tofu'&&/^\s*(?:block|pack(?:et)?)\b/i.test(t.slice(m[0].length)))g=pnum(m[1])*350;
+        if(g&&g>=20){const rest=t.slice(m[0].length).replace(/^\s*(?:of\s+)?/i,'').trim();
+          return fmtIng0(Math.round(g/5)*5+' g '+rest,x,metric)}}}
+  }catch(err){}
+  return fmtIng0(text,x,metric)}
+/* ingredient order: proteins first, everything else in the recipe's own order */
+function ordIng(r){if(r._oi===r.i&&r._o)return r._o;
+  const items=r.i.map((l,i)=>({l,i})),pr=items.filter(o=>typeof o.l==='string'&&isProt(o.l));
+  let out;
+  if(!pr.length)out=items;else{const ps=new Set(pr.map(o=>o.i)),rest=[];
+    items.forEach(o=>{if(!ps.has(o.i))rest.push(o)});
+    out=pr.slice().sort((a,b)=>(ident(a.l).a==='M'?0:1)-(ident(b.l).a==='M'?0:1)).concat(rest.filter((o,k)=>typeof o.l==='string'||(rest[k+1]&&typeof rest[k+1].l==='string')))}
+  r._oi=r.i;r._o=out;return out}
 function fmtStep(s,metric){
   if(!metric||/°\s*C|celsius|\d\s?C\b/i.test(s))return s;
   return s.replace(/(\d{3})\s*(?:°\s*F\b|º\s*F\b|degrees\s*F(?:ahrenheit)?\b|F\b|(degrees)\b)/g,(m,v,bare)=>{v=+v;if(bare&&v<275)return m;return Math.round((v-32)*5/9/5)*5+'°C'})}
@@ -821,7 +841,7 @@ function drawDetail(){const r=R[D.id],m=S.prefs.metric,fav=!!S.favs[r.id];
   <div class="acts"><button data-a="planit">${ic('plan')}Plan it</button><button data-a="listit">${ic('list')}Add to list</button><button data-a="adapt">${ic('spark')}Adapt</button></div>
   <div class="sec"><h2>Ingredients</h2><div class="step"><button data-a="serv" data-o="-1" aria-label="Fewer">${ic('minus')}</button><span>${servText(r,D.x)}</span><button data-a="serv" data-o="1" aria-label="More">${ic('plus')}</button></div></div>
   <p class="hint" style="margin:-2px 0 10px">The recipe makes ${r.y} portion${r.y===1?'':'s'}${S.yield[r.id]?' (set by you)':r.yWas?` (the source says ${r.yWas}, but its amounts are too large for that, so Helth uses ${r.y})`:r.yEst?' (estimated, the source gives no number)':''}. Amounts below are for ${servText(r,D.x)}.${r.pm?` One portion has about ${r.pm.g} g raw ${esc(r.pm.k)}.`:''}${r.src==='sp'?'':' <button data-a="howmacros" style="text-decoration:underline">Change</button>'}</p>
-  <ul class="ing">${r.i.map((l,i)=>typeof l==='string'?`<li data-a="tick" data-i="${i}" class="${D.ticks.has(i)?'done':''}"><span class="box"></span><span>${esc(fmtIng(l,D.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>
+  <ul class="ing">${ordIng(r).map(({l,i})=>typeof l==='string'?`<li data-a="tick" data-i="${i}" class="${D.ticks.has(i)?'done':''}"><span class="box"></span><span>${esc(fmtIng(l,D.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>
   <p class="hint"><button data-a="metric" style="text-decoration:underline">${m?'Showing metric where possible. Show as written':'Showing as written. Convert to metric'}</button></p>
   <div class="sec"><h2>Method</h2></div>
   <ol class="steps">${r.s.map(l=>typeof l==='string'?`<li><span>${esc(fmtStep(l,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ol>
@@ -840,7 +860,7 @@ function startCook(){const r=R[D.id];C={id:r.id,x:D.x,i:0,steps:r.s.filter(s=>ty
 function stopCook(){$('#cook').hidden=true;clearInterval(tick);try{if(wake)wake.release()}catch(e){}wake=null;C=null}
 function clock(s){s=Math.max(0,Math.ceil(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')}
 function drawCook(){const r=R[C.id],n=C.steps.length,i=C.i,m=S.prefs.metric;let main;
-  if(i===0)main=`<p class="cnum">Get ready</p><h2 style="font-size:32px;margin:10px 0 14px">${esc(r.t)}</h2><p class="sub" style="margin-bottom:10px">Tick things off as you get them out. ${servText(r,C.x)}.</p><ul class="ing">${r.i.map(l=>typeof l==='string'?`<li data-a="tickc"><span class="box"></span><span>${esc(fmtIng(l,C.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>`;
+  if(i===0)main=`<p class="cnum">Get ready</p><h2 style="font-size:32px;margin:10px 0 14px">${esc(r.t)}</h2><p class="sub" style="margin-bottom:10px">Tick things off as you get them out. ${servText(r,C.x)}.</p><ul class="ing">${ordIng(r).map(({l})=>typeof l==='string'?`<li data-a="tickc"><span class="box"></span><span>${esc(fmtIng(l,C.x,m))}</span></li>`:`<li class="gh">${esc(l.h)}</li>`).join('')}</ul>`;
   else{const s=fmtStep(C.steps[i-1],m),secs=stepSecs(s),t=C.timers[i];
     main=`<p class="cnum">Step ${i} of ${n}</p><p class="ctext">${esc(s)}</p>${secs?`<div class="timer ${t&&t.left<=0?'end':''}" id="timer">${ic('clock')}<b id="tclock">${t?(t.left<=0?'Done':clock(t.left)):clock(secs)}</b><button class="btn s ${t&&t.run?'o':''}" data-a="timer" data-s="${secs}">${!t?'Start timer':t.left<=0?'Reset':t.run?'Pause':'Resume'}</button></div>`:''}`}
   const others=Object.keys(C.timers).filter(k=>+k!==i&&C.timers[k].run);
@@ -886,7 +906,7 @@ function sheetPrefs(){const p=S.prefs;const ch=(on,l,a)=>`<button class="chip ${
   <h4>Units</h4><div class="chips wrap">${ch(p.metric,'Metric (g, ml, °C)','data-k="metric" data-v="1"')}${ch(!p.metric,'As written','data-k="metric" data-v="0"')}</div>
   <h4>Recipe library</h4><p class="sub">${Object.values(R).filter(r=>!r.src&&!r.mine).length} built in. ${SRC.mdbN?SRC.mdbN+' from TheMealDB, updated '+new Date(SRC.mdbTs).toLocaleDateString('en-GB')+'.':'TheMealDB library not downloaded yet.'}</p>
   <p style="margin-top:8px"><button class="btn s o" data-a="resync" ${SRC.syncing?'disabled':''}>${SRC.syncing?'Refreshing...':'Refresh TheMealDB library'}</button></p>
-  <h4>Version</h4><p class="sub">Helth build 8, 14 November 2026. If yours says something else, close the app and open it twice.</p>
+  <h4>Version</h4><p class="sub">Helth build 9, 14 November 2026. If yours says something else, close the app and open it twice.</p>
   <h4>Backup</h4><p class="sub">Everything is saved on this device. Export a copy now and then.</p>
   <div class="row" style="margin-top:8px"><button class="btn s o" data-a="export">Export my data</button><label class="btn s o" tabindex="0">Import<input type="file" id="importf" accept="application/json,.json" hidden></label></div>
   <div style="height:16px"></div><button class="btn a w" data-a="prefsdone">Done</button>`)}
