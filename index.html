@@ -570,9 +570,10 @@ function setNutrition(r){ // r.y: portions the recipe makes, r.yEst: Helth worke
 const goalOK=(r,minP,maxK)=>(!minP||(r.nu&&r.nu.p>=minP))&&(!maxK||(r.nu&&r.nu.k<=maxK));
 
 /* ---------- state ---------- */
-const DEF={prefs:{diet:'any',love:[],avoid:[],must:[],slow:false,maxTime:0,servings:0,metric:true,theme:'auto',seen:false,minP:40,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},yield:{},ts:0};
+const DEF={prefs:{diet:'any',love:[],avoid:[],must:[],slow:false,maxTime:0,servings:0,metric:true,theme:'auto',seen:false,minP:0,lastP:40,maxK:0,dayP:140},favs:{},plan:{},shop:[],custom:{},cooked:{},notes:{},pantry:[],spKey:'',ptr:{},yield:{},ts:0};
 function norm(s){const o=JSON.parse(JSON.stringify(DEF));if(s&&typeof s==='object')for(const k in o){if(s[k]!=null){if(k==='prefs')Object.assign(o.prefs,s.prefs);else o[k]=s[k]}}return o}
 let S=norm((()=>{try{return JSON.parse(localStorage.getItem('scran')||'{}')}catch(e){return {}}})());
+if(!S.prefs.all){S.prefs.all=1;S.prefs.minP=0}
 function applyTheme(){const t=S.prefs.theme||'auto',root=document.documentElement;
   if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
   const dark=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
@@ -739,7 +740,7 @@ function vDiscover(){
     :`<div class="empty"><h3>Nothing fits ${esc(gl||'your settings')} yet</h3><p>${SRC.syncing?'More recipes are still downloading.':'Loosen the goal or your taste settings to see more.'}</p></div>`}
   ${!p.seen?`<div class="banner"><div><b>Make it yours</b><p>Set your protein goal, diet and taste.</p></div><button class="btn s" data-a="prefs">Set up</button></div>`:''}
   ${SRC.syncing?`<div class="banner sync"><b>Fetching more recipes</b><p>Adding the TheMealDB library with photos. This runs once and then works offline.</p><div class="prog"><i id="syncbar" style="width:${SRC.prog*100}%"></i></div></div>`:''}
-  <div class="chips"><button class="chip ${p.minP?'on':''}" data-a="focus">${p.minP?p.minP+' g+ protein: on':'Protein focus: off'}</button><button class="chip" data-a="go" data-time="30">${ic('clock')}Under 30 min</button><button class="chip" data-a="go" data-maxk="500">Under 500 kcal</button><button class="chip" data-a="go" data-mode="ing">What's in my fridge</button><button class="chip" data-a="go" data-prep="1">Meal prep</button><button class="chip" data-a="go" data-nogoal="1" data-tag="dessert">Treats</button></div>
+  <div class="chips"><button class="chip" data-a="go" data-nogoal="1">${ic('search')}All ${Object.values(R).filter(r=>!r.stub&&allowed(r)).length} recipes</button><button class="chip ${p.minP?'on':''}" data-a="focus">${p.minP?p.minP+' g+ protein: on':'Protein focus: off'}</button><button class="chip" data-a="go" data-time="30">${ic('clock')}Under 30 min</button><button class="chip" data-a="go" data-maxk="500">Under 500 kcal</button><button class="chip" data-a="go" data-mode="ing">What's in my fridge</button><button class="chip" data-a="go" data-prep="1">Meal prep</button><button class="chip" data-a="go" data-nogoal="1" data-tag="dessert">Treats</button></div>
   ${home.map(([t,l,g])=>rail(t,l,g)).join('')}
   <p class="credit pad">${Object.values(R).filter(r=>!r.stub).length} recipes on this device, ${Object.values(R).filter(r=>r.nu&&!r.stub).length} with nutrition estimates. Estimates are worked out per portion from ingredient lists, using nutrient values per 100 g from the USDA National Nutrient Database (SR28). They are a guide, not lab values. Sources: Based Cooking and Public Domain Recipes (public domain), <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>.</p>`}
 function freshHTML(){return ''}
@@ -906,7 +907,7 @@ function sheetPrefs(){const p=S.prefs;const ch=(on,l,a)=>`<button class="chip ${
   <h4>Units</h4><div class="chips wrap">${ch(p.metric,'Metric (g, ml, °C)','data-k="metric" data-v="1"')}${ch(!p.metric,'As written','data-k="metric" data-v="0"')}</div>
   <h4>Recipe library</h4><p class="sub">${Object.values(R).filter(r=>!r.src&&!r.mine).length} built in. ${SRC.mdbN?SRC.mdbN+' from TheMealDB, updated '+new Date(SRC.mdbTs).toLocaleDateString('en-GB')+'.':'TheMealDB library not downloaded yet.'}</p>
   <p style="margin-top:8px"><button class="btn s o" data-a="resync" ${SRC.syncing?'disabled':''}>${SRC.syncing?'Refreshing...':'Refresh TheMealDB library'}</button></p>
-  <h4>Version</h4><p class="sub">Helth build 9, 14 November 2026. If yours says something else, close the app and open it twice.</p>
+  <h4>Version</h4><p class="sub">Helth build 10, 15 November 2026. If yours says something else, close the app and open it twice.</p>
   <h4>Backup</h4><p class="sub">Everything is saved on this device. Export a copy now and then.</p>
   <div class="row" style="margin-top:8px"><button class="btn s o" data-a="export">Export my data</button><label class="btn s o" tabindex="0">Import<input type="file" id="importf" accept="application/json,.json" hidden></label></div>
   <div style="height:16px"></div><button class="btn a w" data-a="prefsdone">Done</button>`)}
